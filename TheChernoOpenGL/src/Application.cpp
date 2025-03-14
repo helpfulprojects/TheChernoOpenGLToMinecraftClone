@@ -24,17 +24,23 @@ int main(void)
     if (glewInit() != GLEW_OK)
         std::cout << "GLEW Error!" << std::endl;
 
+    float vertices[6] = {
+        -0.5,-0.5,
+        0.5,-0.5,
+        0.0,0.5
+    };
+    unsigned int buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), vertices, GL_STATIC_DRAW);
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glBegin(GL_TRIANGLES);
-        glVertex2f(-0.5,-0.5);
-        glVertex2f(0.5, -0.5);
-        glVertex2f(0.0,0.5);
-        glEnd();
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
