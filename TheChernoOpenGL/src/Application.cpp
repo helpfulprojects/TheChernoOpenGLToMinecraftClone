@@ -1,6 +1,45 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <string>
+
+static unsigned int createShader(unsigned int type, std::string& shaderSource) {
+    unsigned int id = glCreateShader(type);
+    const char* source = shaderSource.c_str();
+    glShaderSource(id, 1, &source, nullptr);
+    glCompileShader(id);
+    int status;
+    glGetShaderiv(id, GL_COMPILE_STATUS, &status);
+    if (status == GL_FALSE) {
+        int length;
+        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+        char* msg = (char*)alloca(length*sizeof(char));
+        glGetShaderInfoLog(id, length, nullptr, msg);
+        std::cout << "Error in " << (type==GL_VERTEX_SHADER?"vertex":"fragment") << " shader!" << std::endl;
+        std::cout << msg << std::endl;
+        glDeleteShader(id);
+        return 0;
+    }
+    return id;
+}
+
+static unsigned int createShaderProgram(std::string& vertexShaderSource, std::string& fragmentShaderSource) {
+    unsigned int id = glCreateProgram();
+    unsigned int vertexId = createShader(GL_VERTEX_SHADER, vertexShaderSource);
+    unsigned int fragmentId = createShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+    glAttachShader(id, vertexId);
+    glAttachShader(id, fragmentId);
+    glLinkProgram(id);
+    int status;
+    glGetProgramiv(id, GL_LINK_STATUS, &status);
+    if (status == GL_FALSE) {
+        std::cout << "LINKING ERROR" << std::endl;
+    }
+    glValidateProgram(id);
+    glDeleteShader(vertexId);
+    glDeleteShader(fragmentId);
+    return id;
+}
 
 int main(void)
 {
@@ -37,6 +76,28 @@ int main(void)
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
+    std::string vertexShaderSource =
+        "#version 330 core\n"
+        "\n"
+        "layout(location=0) in vec4 position;"
+        "\n"
+        "void main()\n"
+        "{\n"
+        "   gl_Position = position;\n"
+        "}\n";
+    std::string fragmentShaderSource =
+        "#version 330 core\n"
+        "\n"
+        "out vec4 color;"
+        "\n"
+        "void main()\n"
+        "{\n"
+        "   color = vec4(1.0,0.0,0.0,1.0);\n"
+        "}\n";
+
+    unsigned int shaderProgram = createShaderProgram(vertexShaderSource,fragmentShaderSource);
+    glUseProgram(shaderProgram);
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
@@ -51,7 +112,7 @@ int main(void)
         /* Poll for and process events */
         glfwPollEvents();
     }
-
+    glDeleteProgram(shaderProgram);
     glfwTerminate();
     return 0;
 }
