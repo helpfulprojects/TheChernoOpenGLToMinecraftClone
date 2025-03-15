@@ -156,7 +156,7 @@ int main(void)
         GlCall(glClear(GL_COLOR_BUFFER_BIT));
 
 		GlCall(glUniform4f(location, r, 0.0f, 0.0f, 1.0f));
-        GlCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
+        GlCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
         if (r < 0.0f)
             increment = 0.05f;
