@@ -103,7 +103,9 @@ int main(void)
     /* Initialize the library */
     if (!glfwInit())
         return -1;
-
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
     if (!window)
@@ -118,12 +120,16 @@ int main(void)
     if (glewInit() != GLEW_OK)
         std::cout << "GLEW Error!" << std::endl;
 
+    std::cout << glGetString(GL_VERSION) << std::endl;
     float vertices[] = {
         -0.5,-0.5,
         0.5,-0.5,
         0.5,0.5,
         -0.5,0.5,
     };
+    unsigned int vao;
+    glCreateVertexArrays(1, &vao);
+    glBindVertexArray(vao);
     unsigned int vbo;
     GlCall(glGenBuffers(1, &vbo));
     GlCall(glBindBuffer(GL_ARRAY_BUFFER, vbo));
@@ -140,13 +146,16 @@ int main(void)
     GlCall(glGenBuffers(1, &ebo));
     GlCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo));
     GlCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW));
-
+    glBindVertexArray(0);
     ShaderProgramSource shaderSource = parseShader("res/shaders/Basic.shader");
     unsigned int shaderProgram = createShaderProgram(shaderSource.vertexShaderSource,shaderSource.fragmentShaderSource);
     GlCall(glUseProgram(shaderProgram));
     GlCall(int location = glGetUniformLocation(shaderProgram, "u_Color"));
     ASSERT(location != -1);
     GlCall(glUniform4f(location, 1.0f, 0.0f, 0.0f, 1.0f));
+
+    GlCall(glUseProgram(0));
+    GlCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
     float r = 0.0f;
     float increment = 0.05f;
     /* Loop until the user closes the window */
@@ -155,7 +164,9 @@ int main(void)
         /* Render here */
         GlCall(glClear(GL_COLOR_BUFFER_BIT));
 
+		GlCall(glUseProgram(shaderProgram));
 		GlCall(glUniform4f(location, r, 0.0f, 0.0f, 1.0f));
+		GlCall(glBindVertexArray(vao));
         GlCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
         if (r < 0.0f)
