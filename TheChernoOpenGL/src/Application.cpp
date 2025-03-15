@@ -65,6 +65,9 @@ static unsigned int createShaderProgram(std::string& vertexShaderSource, std::st
     glGetProgramiv(id, GL_LINK_STATUS, &status);
     if (status == GL_FALSE) {
         std::cout << "LINKING ERROR" << std::endl;
+        char msg[512];
+        glGetProgramInfoLog(id, 512, nullptr, msg);
+        std::cout << msg << std::endl;
     }
     glValidateProgram(id);
     glDeleteShader(vertexId);
@@ -94,18 +97,28 @@ int main(void)
     if (glewInit() != GLEW_OK)
         std::cout << "GLEW Error!" << std::endl;
 
-    float vertices[6] = {
+    float vertices[] = {
         -0.5,-0.5,
         0.5,-0.5,
-        0.0,0.5
+        0.5,0.5,
+        -0.5,0.5,
     };
-    unsigned int buffer;
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), vertices, GL_STATIC_DRAW);
+    unsigned int vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), vertices, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+
+    unsigned int indices[] = {
+        0, 1 , 2,
+        0, 2 , 3,
+    };
+    unsigned int ebo;
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
 
     ShaderProgramSource shaderSource = parseShader("res/shaders/Basic.shader");
     unsigned int shaderProgram = createShaderProgram(shaderSource.vertexShaderSource,shaderSource.fragmentShaderSource);
@@ -117,7 +130,7 @@ int main(void)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
