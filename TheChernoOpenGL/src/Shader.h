@@ -15,6 +15,8 @@ public:
 	void Bind() const;
 	void Unbind() const;
 
+	void Uniform1i(const std::string& uniformName, int value);
+	void Uniform1f(const std::string& uniformName, float value);
 	void Uniform4f(const std::string& uniformName, float v1, float v2, float v3, float v4);
 private:
 	unsigned int m_RendererID;

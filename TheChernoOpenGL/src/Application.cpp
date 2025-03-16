@@ -11,6 +11,7 @@
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "Shader.h"
+#include "Texture.h"
 
 int main(void)
 {
@@ -38,17 +39,20 @@ int main(void)
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
 	{
+		GlCall(glEnable(GL_BLEND));
+		GlCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 		Renderer renderer;
 		float vertices[] = {
-			-0.5,-0.5,
-			0.5,-0.5,
-			0.5,0.5,
-			-0.5,0.5,
+			-0.5,-0.5,0.0,0.0,
+			0.5,-0.5,1.0,0.0,
+			0.5,0.5,1.0,1.0,
+			-0.5,0.5,0.0,1.0
 		};
 		VertexArray va;
-		VertexBuffer vb(vertices, 4 * 2 * sizeof(float));
+		VertexBuffer vb(vertices, 4 * 4 * sizeof(float));
 
 		VertexBufferLayout layout;
+		layout.Push<float>(2);
 		layout.Push<float>(2);
 		va.AddBuffer(vb,layout);
 
@@ -60,7 +64,12 @@ int main(void)
 		va.Unbind();
 		Shader shader("res/shaders/Basic.shader");
 		shader.Bind();
+		
 		shader.Uniform4f("u_Color", 1.0f, 0.0f, 0.0f, 1.0f);
+		
+		Texture texture("res/textures/thecherno.png");
+		texture.Bind();
+		shader.Uniform1i("u_Texture", 0);
 
 		va.Unbind();
 		shader.Unbind();
