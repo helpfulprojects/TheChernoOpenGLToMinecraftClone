@@ -18,9 +18,6 @@ struct VertexBufferElement {
 };
 
 class VertexBufferLayout {
-private:
-	std::vector<VertexBufferElement> m_Elements;
-	unsigned int m_Stride;
 public:
 	VertexBufferLayout(): m_Stride(0) {};
 	template<typename T>
@@ -45,4 +42,7 @@ public:
 
 	inline const std::vector<VertexBufferElement>& GetElements() const { return m_Elements; }
 	inline const unsigned int GetStride() const { return m_Stride;  }
+private:
+	std::vector<VertexBufferElement> m_Elements;
+	unsigned int m_Stride;
 };

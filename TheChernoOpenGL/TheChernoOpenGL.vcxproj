@@ -147,7 +147,6 @@
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\VertexArray.h" />
     <ClInclude Include="src\VertexBuffer.h" />
-    <ClInclude Include="src\VertexBufferElement.h" />
     <ClInclude Include="src\VertexBufferLayout.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
