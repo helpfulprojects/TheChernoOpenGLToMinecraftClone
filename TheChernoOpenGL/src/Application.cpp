@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "Renderer.h"
+#include "VertexArray.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 
@@ -111,20 +112,19 @@ int main(void)
 			0.5,0.5,
 			-0.5,0.5,
 		};
-		unsigned int vao;
-		glCreateVertexArrays(1, &vao);
-		glBindVertexArray(vao);
+		VertexArray vao;
 		VertexBuffer vbo(vertices, 4 * 2 * sizeof(float));
 
-		GlCall(glEnableVertexAttribArray(0));
-		GlCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
+		VertexBufferLayout layout;
+		layout.Push<float>(2);
+		vao.AddBuffer(vbo,layout);
 
 		unsigned int indices[] = {
 			0, 1 , 2,
 			0, 2 , 3,
 		};
 		IndexBuffer ibo(indices, 6);
-		glBindVertexArray(0);
+		vao.Unbind();
 		ShaderProgramSource shaderSource = parseShader("res/shaders/Basic.shader");
 		unsigned int shaderProgram = createShaderProgram(shaderSource.vertexShaderSource, shaderSource.fragmentShaderSource);
 		GlCall(glUseProgram(shaderProgram));
@@ -144,7 +144,7 @@ int main(void)
 
 			GlCall(glUseProgram(shaderProgram));
 			GlCall(glUniform4f(location, r, 0.0f, 0.0f, 1.0f));
-			GlCall(glBindVertexArray(vao));
+			vao.Bind();
 			GlCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
 			if (r < 0.0f)
