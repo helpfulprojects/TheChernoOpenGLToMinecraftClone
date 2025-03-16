@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "Renderer.h"
+#include "ErrorManager.h"
 #include <GL/glew.h>
 struct VertexBufferElement {
 	unsigned int count;

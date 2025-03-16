@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 
+#include "ErrorManager.h"
 #include "Renderer.h"
 #include "VertexArray.h"
 #include "VertexBuffer.h"

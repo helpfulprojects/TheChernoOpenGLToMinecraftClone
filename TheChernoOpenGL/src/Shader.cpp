@@ -1,5 +1,5 @@
 #include "Shader.h"
-#include "Renderer.h"
+#include "ErrorManager.h"
 #include <GL/glew.h>
 #include <iostream>
 #include <string>
