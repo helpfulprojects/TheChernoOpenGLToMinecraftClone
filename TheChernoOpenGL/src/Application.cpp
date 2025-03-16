@@ -38,43 +38,44 @@ int main(void)
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
 	{
+		Renderer renderer;
 		float vertices[] = {
 			-0.5,-0.5,
 			0.5,-0.5,
 			0.5,0.5,
 			-0.5,0.5,
 		};
-		VertexArray vao;
-		VertexBuffer vbo(vertices, 4 * 2 * sizeof(float));
+		VertexArray va;
+		VertexBuffer vb(vertices, 4 * 2 * sizeof(float));
 
 		VertexBufferLayout layout;
 		layout.Push<float>(2);
-		vao.AddBuffer(vbo,layout);
+		va.AddBuffer(vb,layout);
 
 		unsigned int indices[] = {
 			0, 1 , 2,
 			0, 2 , 3,
 		};
-		IndexBuffer ibo(indices, 6);
-		vao.Unbind();
-		Shader shaderProgram("res/shaders/Basic.shader");
-		shaderProgram.Bind();
-		shaderProgram.Uniform4f("u_Color", 1.0f, 0.0f, 0.0f, 1.0f);
+		IndexBuffer ib(indices, 6);
+		va.Unbind();
+		Shader shader("res/shaders/Basic.shader");
+		shader.Bind();
+		shader.Uniform4f("u_Color", 1.0f, 0.0f, 0.0f, 1.0f);
 
-		vao.Unbind();
-		shaderProgram.Unbind();
+		va.Unbind();
+		shader.Unbind();
 		float r = 0.0f;
 		float increment = 0.05f;
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
 		{
 			/* Render here */
-			GlCall(glClear(GL_COLOR_BUFFER_BIT));
+			renderer.Clear();
 
-			shaderProgram.Bind();
-			shaderProgram.Uniform4f("u_Color", r, 0.0f, 0.0f, 1.0f);
-			vao.Bind();
-			GlCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+			shader.Bind();
+			shader.Uniform4f("u_Color", r, 0.0f, 0.0f, 1.0f);
+
+			renderer.Draw(va, ib, shader);
 
 			if (r < 0.0f)
 				increment = 0.05f;
