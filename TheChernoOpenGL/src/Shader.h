@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <unordered_map>
+#include <glm/glm.hpp>
 
 struct ShaderProgramSource {
 	std::string vertexShaderSource;
@@ -18,6 +19,7 @@ public:
 	void Uniform1i(const std::string& uniformName, int value);
 	void Uniform1f(const std::string& uniformName, float value);
 	void Uniform4f(const std::string& uniformName, float v1, float v2, float v3, float v4);
+	void UniformMatrix4fv(const std::string& uniformName, const glm::mat4& matrix);
 private:
 	unsigned int m_RendererID;
 	std::string m_Filepath;

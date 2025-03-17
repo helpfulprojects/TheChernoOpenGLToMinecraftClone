@@ -13,6 +13,9 @@
 #include "Shader.h"
 #include "Texture.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/glm.hpp>
+
 int main(void)
 {
 	GLFWwindow* window;
@@ -24,7 +27,7 @@ int main(void)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+	window = glfwCreateWindow(960, 540, "The Cherno OpenGL", NULL, NULL);
 	if (!window)
 	{
 		glfwTerminate();
@@ -43,10 +46,10 @@ int main(void)
 		GlCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 		Renderer renderer;
 		float vertices[] = {
-			-0.5,-0.5,0.0,0.0,
-			0.5,-0.5,1.0,0.0,
-			0.5,0.5,1.0,1.0,
-			-0.5,0.5,0.0,1.0
+			100.0,100.0,0.0,0.0,
+			200.0,100.0,1.0,0.0,
+			200.0,200.0,1.0,1.0,
+			100.0,200.0,0.0,1.0
 		};
 		VertexArray va;
 		VertexBuffer vb(vertices, 4 * 4 * sizeof(float));
@@ -62,14 +65,20 @@ int main(void)
 		};
 		IndexBuffer ib(indices, 6);
 		va.Unbind();
+
 		Shader shader("res/shaders/Basic.shader");
 		shader.Bind();
-		
 		shader.Uniform4f("u_Color", 1.0f, 0.0f, 0.0f, 1.0f);
 		
 		Texture texture("res/textures/thecherno.png");
 		texture.Bind();
 		shader.Uniform1i("u_Texture", 0);
+
+		glm::mat4 proj = glm::ortho(0.0, 960.0, 0.0, 540.0,-1.0,1.0);
+		glm::mat4 view = glm::translate(glm::mat4(1.0), {-100.0,0.0,0.0});
+		glm::mat4 model = glm::translate(glm::mat4(1.0), {0.0,100.0,0.0});
+		glm::mat4 mvp = proj * view * model;
+		shader.UniformMatrix4fv("u_MVP", mvp);
 
 		va.Unbind();
 		shader.Unbind();
