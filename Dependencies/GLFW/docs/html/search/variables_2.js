@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['height',['height',['../structGLFWvidmode.html#ac65942a5f6981695517437a9d571d03c',1,'GLFWvidmode::height()'],['../structGLFWimage.html#a0b7d95368f0c80d5e5c9875057c7dbec',1,'GLFWimage::height()']]]
+  ['deallocate_0',['deallocate',['../struct_g_l_f_wallocator.html#ab74cf9a969e73e6eb65a6112a591a988',1,'GLFWallocator']]]
 ];

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['native_20access',['Native access',['../group__native.html',1,'']]]
+  ['hat_20states_0',['Joystick hat states',['../group__hat__state.html',1,'']]]
 ];

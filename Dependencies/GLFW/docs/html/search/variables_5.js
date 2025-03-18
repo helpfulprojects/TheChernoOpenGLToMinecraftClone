@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['size',['size',['../structGLFWgammaramp.html#ad620e1cffbff9a32c51bca46301b59a5',1,'GLFWgammaramp']]]
+  ['pixels_0',['pixels',['../struct_g_l_f_wimage.html#a0c532a5c2bb715555279b7817daba0fb',1,'GLFWimage']]]
 ];

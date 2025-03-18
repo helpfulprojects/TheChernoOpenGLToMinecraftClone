@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['keyboard_20keys',['Keyboard keys',['../group__keys.html',1,'']]]
+  ['flags_0',['Modifier key flags',['../group__mods.html',1,'']]]
 ];

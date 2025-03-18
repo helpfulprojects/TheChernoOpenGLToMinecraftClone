@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['blue',['blue',['../structGLFWgammaramp.html#acf0c836d0efe29c392fe8d1a1042744b',1,'GLFWgammaramp']]],
-  ['bluebits',['blueBits',['../structGLFWvidmode.html#af310977f58d2e3b188175b6e3d314047',1,'GLFWvidmode']]]
+  ['allocate_0',['allocate',['../struct_g_l_f_wallocator.html#a18a798136f17a9cb105be18312193bf7',1,'GLFWallocator']]],
+  ['axes_1',['axes',['../struct_g_l_f_wgamepadstate.html#a8b2c8939b1d31458de5359998375c189',1,'GLFWgamepadstate']]]
 ];

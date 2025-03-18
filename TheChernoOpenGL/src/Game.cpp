@@ -2,8 +2,6 @@
 #include "IndexBuffer.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
-#include <imgui/imgui.h>
-#include <imgui/imgui_impl_glfw_gl3.h>
 #include <GLFW/glfw3.h>
 
 Game::~Game()
@@ -13,9 +11,11 @@ Game::~Game()
 	delete va;
 	delete ib;
 	delete texture;
+	delete camera;
 }
 void Game::Init()
 {
+	camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
 	m_Renderer = new Renderer();
 	float vertices[] = {
 			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -86,22 +86,37 @@ void Game::Update(float deltaTime)
 }
 void Game::Render()
 {
-	ImGui_ImplGlfwGL3_NewFrame();
 	shader->Bind();
+	glm::mat4 proj = glm::perspective(glm::radians(camera->Zoom), (float)m_SCR_WIDTH / (float)m_SCR_HEIGHT, 0.1f, 100.0f);
+	glm::mat4 view = camera->GetViewMatrix();
 	glm::mat4 model = glm::mat4(1.0f); 
-	glm::mat4 view = glm::mat4(1.0f);
-	glm::mat4 proj = glm::mat4(1.0f);
-	model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-	proj = glm::perspective(glm::radians(45.0f), (float)960.0 / (float)540.0, 0.1f, 100.0f);
 	glm::mat4 mvp = proj * view * model;
 	shader->UniformMatrix4fv("u_MVP", mvp);
 	m_Renderer->Draw(*va, *shader);
-	{
-		ImGui::Render();
-		ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
-	}
 }
 void Game::ProcessInput(float deltaTime)
 {
+
+    if (m_Keys[GLFW_KEY_W])
+        camera->ProcessKeyboard(FORWARD, deltaTime);
+    if (m_Keys[GLFW_KEY_S])
+        camera->ProcessKeyboard(BACKWARD, deltaTime);
+    if (m_Keys[GLFW_KEY_A])
+        camera->ProcessKeyboard(LEFT, deltaTime);
+    if (m_Keys[GLFW_KEY_D])
+        camera->ProcessKeyboard(RIGHT, deltaTime);
+    if (m_Keys[GLFW_KEY_SPACE])
+        camera->ProcessKeyboard(UP, deltaTime);
+    if (m_Keys[GLFW_KEY_LEFT_SHIFT])
+        camera->ProcessKeyboard(DOWN, deltaTime);
 }
+
+void Game::ProcessMouse(float xpos, float ypos, float xoffset, float yoffset)
+{
+	m_Xpos = xpos;
+	m_Ypos = ypos;
+	m_Xoffset = xoffset;
+	m_Yoffset = yoffset;
+    camera->ProcessMouseMovement(m_Xoffset, m_Yoffset);
+}
+

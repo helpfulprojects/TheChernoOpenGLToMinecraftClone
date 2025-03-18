@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['mouse_20buttons',['Mouse buttons',['../group__buttons.html',1,'']]],
-  ['modifier_20key_20flags',['Modifier key flags',['../group__mods.html',1,'']]],
-  ['monitor_20reference',['Monitor reference',['../group__monitor.html',1,'']]]
+  ['gamepad_20axes_0',['Gamepad axes',['../group__gamepad__axes.html',1,'']]],
+  ['gamepad_20buttons_1',['Gamepad buttons',['../group__gamepad__buttons.html',1,'']]]
 ];
