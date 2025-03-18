@@ -16,6 +16,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw_gl3.h>
+
 int main(void)
 {
 	GLFWwindow* window;
@@ -41,6 +44,10 @@ int main(void)
 		std::cout << "GLEW Error!" << std::endl;
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
+
+    ImGui::CreateContext();
+    ImGui_ImplGlfwGL3_Init(window, true);
+    ImGui::StyleColorsDark();
 	{
 		GlCall(glEnable(GL_BLEND));
 		GlCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
@@ -70,15 +77,13 @@ int main(void)
 		shader.Bind();
 		shader.Uniform4f("u_Color", 1.0f, 0.0f, 0.0f, 1.0f);
 		
-		Texture texture("res/textures/thecherno.png");
+		Texture texture("res/textures/wall.jpg");
 		texture.Bind();
 		shader.Uniform1i("u_Texture", 0);
 
 		glm::mat4 proj = glm::ortho(0.0, 960.0, 0.0, 540.0,-1.0,1.0);
 		glm::mat4 view = glm::translate(glm::mat4(1.0), {-100.0,0.0,0.0});
-		glm::mat4 model = glm::translate(glm::mat4(1.0), {0.0,100.0,0.0});
-		glm::mat4 mvp = proj * view * model;
-		shader.UniformMatrix4fv("u_MVP", mvp);
+		glm::vec3 translate = { 0.0,0.0,0.0 };
 
 		va.Unbind();
 		shader.Unbind();
@@ -89,9 +94,13 @@ int main(void)
 		{
 			/* Render here */
 			renderer.Clear();
+			ImGui_ImplGlfwGL3_NewFrame();
 
 			shader.Bind();
 			shader.Uniform4f("u_Color", r, 0.0f, 0.0f, 1.0f);
+			glm::mat4 model = glm::translate(glm::mat4(1.0), translate);
+			glm::mat4 mvp = proj * view * model;
+			shader.UniformMatrix4fv("u_MVP", mvp);
 
 			renderer.Draw(va, ib, shader);
 
@@ -101,7 +110,12 @@ int main(void)
 				increment = -0.05f;
 
 			r += increment;
-
+			{
+				ImGui::SliderFloat2("float", &translate.x, 0.0f, 960.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
+				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+				ImGui::Render();
+				ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+			}
 			/* Swap front and back buffers */
 			glfwSwapBuffers(window);
 
@@ -109,6 +123,8 @@ int main(void)
 			glfwPollEvents();
 		}
 	}
+    ImGui_ImplGlfwGL3_Shutdown();
+    ImGui::DestroyContext();
 	glfwTerminate();
 	return 0;
 }
