@@ -6,19 +6,29 @@
 #include <sstream>
 
 #include "ErrorManager.h"
-#include "Renderer.h"
-#include "VertexArray.h"
-#include "VertexBuffer.h"
-#include "IndexBuffer.h"
-#include "Shader.h"
-#include "Texture.h"
 
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/glm.hpp>
-
+#include "Game.h"
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw_gl3.h>
-
+Game* game;
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
+{
+	if (key == GLFW_KEY_ESCAPE)
+	{
+		glfwSetWindowShouldClose(window, true);
+	}
+	if (key >= 0 && key < 1024)
+	{
+		if (action == GLFW_PRESS)
+		{
+			game->m_Keys[key] = true;
+		}
+		else if (action == GLFW_RELEASE)
+		{
+			game->m_Keys[key] = false;
+		}
+	}
+}
 int main(void)
 {
 	GLFWwindow* window;
@@ -45,86 +55,37 @@ int main(void)
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
-    ImGui::CreateContext();
-    ImGui_ImplGlfwGL3_Init(window, true);
-    ImGui::StyleColorsDark();
+	glfwSetKeyCallback(window, key_callback);
+	ImGui::CreateContext();
+	ImGui_ImplGlfwGL3_Init(window, true);
+	ImGui::StyleColorsDark();
+	game = new Game();
+	GlCall(glEnable(GL_BLEND));
+	GlCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+	game->Init();
+	float deltaTime = 0.0f;
+	float currentTime = 0.0f;
+	float previousTime = 0.0f;
+	/* Loop until the user closes the window */
+	while (!glfwWindowShouldClose(window))
 	{
-		GlCall(glEnable(GL_BLEND));
-		GlCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-		Renderer renderer;
-		float vertices[] = {
-			100.0,100.0,0.0,0.0,
-			200.0,100.0,1.0,0.0,
-			200.0,200.0,1.0,1.0,
-			100.0,200.0,0.0,1.0
-		};
-		VertexArray va;
-		VertexBuffer vb(vertices, 4 * 4 * sizeof(float));
+		currentTime = (float)glfwGetTime();
+		deltaTime = currentTime - previousTime;
+		/* Render here */
+		game->m_Renderer->Clear();
+		game->ProcessInput(deltaTime);
+		game->Update(deltaTime);
+		game->Render();
+		previousTime = currentTime;
+		/* Swap front and back buffers */
+		glfwSwapBuffers(window);
 
-		VertexBufferLayout layout;
-		layout.Push<float>(2);
-		layout.Push<float>(2);
-		va.AddBuffer(vb,layout);
-
-		unsigned int indices[] = {
-			0, 1 , 2,
-			0, 2 , 3,
-		};
-		IndexBuffer ib(indices, 6);
-		va.Unbind();
-
-		Shader shader("res/shaders/Basic.shader");
-		shader.Bind();
-		shader.Uniform4f("u_Color", 1.0f, 0.0f, 0.0f, 1.0f);
-		
-		Texture texture("res/textures/wall.jpg");
-		texture.Bind();
-		shader.Uniform1i("u_Texture", 0);
-
-		glm::mat4 proj = glm::ortho(0.0, 960.0, 0.0, 540.0,-1.0,1.0);
-		glm::mat4 view = glm::translate(glm::mat4(1.0), {-100.0,0.0,0.0});
-		glm::vec3 translate = { 0.0,0.0,0.0 };
-
-		va.Unbind();
-		shader.Unbind();
-		float r = 0.0f;
-		float increment = 0.05f;
-		/* Loop until the user closes the window */
-		while (!glfwWindowShouldClose(window))
-		{
-			/* Render here */
-			renderer.Clear();
-			ImGui_ImplGlfwGL3_NewFrame();
-
-			shader.Bind();
-			shader.Uniform4f("u_Color", r, 0.0f, 0.0f, 1.0f);
-			glm::mat4 model = glm::translate(glm::mat4(1.0), translate);
-			glm::mat4 mvp = proj * view * model;
-			shader.UniformMatrix4fv("u_MVP", mvp);
-
-			renderer.Draw(va, ib, shader);
-
-			if (r < 0.0f)
-				increment = 0.05f;
-			else if (r > 1.0f)
-				increment = -0.05f;
-
-			r += increment;
-			{
-				ImGui::SliderFloat2("float", &translate.x, 0.0f, 960.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
-				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-				ImGui::Render();
-				ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
-			}
-			/* Swap front and back buffers */
-			glfwSwapBuffers(window);
-
-			/* Poll for and process events */
-			glfwPollEvents();
-		}
+		/* Poll for and process events */
+		glfwPollEvents();
 	}
-    ImGui_ImplGlfwGL3_Shutdown();
-    ImGui::DestroyContext();
+	ImGui_ImplGlfwGL3_Shutdown();
+	ImGui::DestroyContext();
+	delete game;
 	glfwTerminate();
 	return 0;
 }
