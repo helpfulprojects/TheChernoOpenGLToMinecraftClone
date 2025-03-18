@@ -1,11 +1,11 @@
 #include "VertexBuffer.h"
 #include "ErrorManager.h"
 
-VertexBuffer::VertexBuffer(const void* data,unsigned int size)
+VertexBuffer::VertexBuffer(const float* data,unsigned int count): m_Count(count)
 {
 	GlCall(glGenBuffers(1, &m_RendererID));
 	Bind();
-	glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, count*sizeof(float), data, GL_STATIC_DRAW);
 }
 
 VertexBuffer::~VertexBuffer()

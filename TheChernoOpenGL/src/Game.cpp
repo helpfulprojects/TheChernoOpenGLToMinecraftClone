@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw_gl3.h>
+#include <GLFW/glfw3.h>
 
 Game::~Game()
 {
@@ -17,25 +18,55 @@ void Game::Init()
 {
 	m_Renderer = new Renderer();
 	float vertices[] = {
-		100.0,100.0,0.0,0.0,
-		200.0,100.0,1.0,0.0,
-		200.0,200.0,1.0,1.0,
-		100.0,200.0,0.0,1.0
+			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+			 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+			-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+			-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+			-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+			-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+			 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+			 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+			 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+			 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+			-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f 
 	};
 	va = new VertexArray();
-	VertexBuffer vb(vertices, 4 * 4 * sizeof(float));
+	VertexBuffer vb(vertices, 36*5);
 
 	VertexBufferLayout layout;
-	layout.Push<float>(2);
+	layout.Push<float>(3);
 	layout.Push<float>(2);
 	va->AddBuffer(vb, layout);
-
-	unsigned int indices[] = {
-		0, 1 , 2,
-		0, 2 , 3,
-	};
-	ib = new IndexBuffer(indices, 6);
-	va->Unbind();
 
 	shader = new Shader("res/shaders/Basic.shader");
 	shader->Bind();
@@ -43,8 +74,7 @@ void Game::Init()
 	texture->Bind();
 	shader->Uniform1i("u_Texture", 0);
 
-	proj = glm::ortho(0.0, 960.0, 0.0, 540.0, -1.0, 1.0);
-	view = glm::translate(glm::mat4(1.0), { -100.0,0.0,0.0 });
+	proj = glm::perspective(glm::radians(45.0f), (float)960.0 / (float)540.0, 0.1f, 100.0f);
 	translate = { 0.0,0.0,0.0 };
 
 	va->Unbind();
@@ -58,13 +88,16 @@ void Game::Render()
 {
 	ImGui_ImplGlfwGL3_NewFrame();
 	shader->Bind();
-	glm::mat4 model = glm::translate(glm::mat4(1.0), translate);
+	glm::mat4 model = glm::mat4(1.0f); 
+	glm::mat4 view = glm::mat4(1.0f);
+	glm::mat4 proj = glm::mat4(1.0f);
+	model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+	proj = glm::perspective(glm::radians(45.0f), (float)960.0 / (float)540.0, 0.1f, 100.0f);
 	glm::mat4 mvp = proj * view * model;
 	shader->UniformMatrix4fv("u_MVP", mvp);
-	m_Renderer->Draw(*va, *ib, *shader);
+	m_Renderer->Draw(*va, *shader);
 	{
-		ImGui::SliderFloat2("float", &translate.x, 0.0f, 960.0f);
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::Render();
 		ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 	}

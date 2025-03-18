@@ -61,6 +61,7 @@ int main(void)
 	ImGui::StyleColorsDark();
 	game = new Game();
 	GlCall(glEnable(GL_BLEND));
+	GlCall(glEnable(GL_DEPTH_TEST));
 	GlCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	game->Init();
 	float deltaTime = 0.0f;
