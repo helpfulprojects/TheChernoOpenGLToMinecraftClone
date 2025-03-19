@@ -3,8 +3,11 @@
 #include <GL\glew.h>
 #include "ErrorManager.h"
 
+const float Texture::m_Offset = (float)(Texture::m_AtlasSize / (float)Texture::m_TexturesPerRow) / (float)Texture::m_AtlasSize;
+
 Texture::Texture(const std::string& filepath): m_RendererID(0), m_Filepath(filepath), m_LocalBuffer(nullptr), m_Width(0), m_Height(0), m_BPP(0)
 {
+
 	stbi_set_flip_vertically_on_load(1);
 	GlCall(glGenTextures(1, &m_RendererID));
 	GlCall(glBindTexture(GL_TEXTURE_2D, m_RendererID));
@@ -13,8 +16,8 @@ Texture::Texture(const std::string& filepath): m_RendererID(0), m_Filepath(filep
 
 	GlCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_LocalBuffer));
 
-	GlCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-	GlCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+	GlCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+	GlCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
 	GlCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
 	GlCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
