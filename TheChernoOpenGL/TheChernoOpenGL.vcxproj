@@ -147,6 +147,8 @@
     <ClCompile Include="src\VertexArray.cpp" />
     <ClCompile Include="src\VertexBuffer.cpp" />
     <ClCompile Include="src\VertexBufferLayout.cpp" />
+    <ClCompile Include="src\World.cpp" />
+    <ClCompile Include="src\Wrold.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Block.h" />
@@ -306,6 +308,7 @@
     <ClInclude Include="src\VertexArray.h" />
     <ClInclude Include="src\VertexBuffer.h" />
     <ClInclude Include="src\VertexBufferLayout.h" />
+    <ClInclude Include="src\World.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\textures\logo.png" />

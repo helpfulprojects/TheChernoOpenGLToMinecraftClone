@@ -6,6 +6,7 @@
 #include "VertexArray.h"
 #include "VertexBuffer.h"
 #include "Camera.h"
+#include "World.h"
 class Game
 {
 public:
@@ -21,9 +22,9 @@ public:
 private:
 	unsigned int vao;
 	Shader* shader;
-	Chunk* chunk;
+	World* m_World;
 	Texture* texture;
-	Camera* camera;
+	Camera* m_Camera;
 	glm::vec3 translate;
 	glm::mat4 proj;
 	glm::mat4 view;

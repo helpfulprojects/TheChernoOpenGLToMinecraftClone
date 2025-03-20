@@ -9,16 +9,15 @@ Game::~Game()
 {
 	delete shader;
 	delete m_Renderer;
-	delete chunk;
+	delete m_World;
 	delete texture;
-	delete camera;
+	delete m_Camera;
 }
 void Game::Init()
 {
-	camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
+	m_Camera = new Camera(glm::vec3(0.0f, 30.0f, 0.0f));
 	m_Renderer = new Renderer();
-	chunk = new Chunk();
-	chunk->UpdateVertexArray();
+	m_World = new World();
 	shader = new Shader("res/shaders/Basic.shader");
 	shader->Bind();
 	texture = new Texture("res/textures/atlas.png");
@@ -28,34 +27,37 @@ void Game::Init()
 }
 void Game::Update(float deltaTime)
 {
+	std::cout <<"FPS:" << 1 / deltaTime << std::endl;
+	m_World->UpdateChunksToRender(m_Camera->Position);
 }
 void Game::Render()
 {
 	shader->Bind();
-	glm::mat4 proj = glm::perspective(glm::radians(camera->Zoom), (float)m_SCR_WIDTH / (float)m_SCR_HEIGHT, 0.1f, 100.0f);
-	glm::mat4 view = camera->GetViewMatrix();
+	glm::mat4 proj = glm::perspective(glm::radians(m_Camera->Zoom), (float)m_SCR_WIDTH / (float)m_SCR_HEIGHT, 0.1f, 100.0f);
+	glm::mat4 view = m_Camera->GetViewMatrix();
 	glm::mat4 model = glm::mat4(1.0f); 
 	glm::mat4 mvp = proj * view * model;
 	shader->UniformMatrix4fv("u_MVP", mvp);
-	m_Renderer->Draw(*chunk, *shader);
+	m_World->UpdateVertexArrays();
+	m_World->Draw(*m_Renderer);
 }
 void Game::ProcessInput(float deltaTime)
 {
 
     if (m_Keys[GLFW_KEY_W])
-        camera->ProcessKeyboard(FORWARD, deltaTime);
+        m_Camera->ProcessKeyboard(FORWARD, deltaTime);
     if (m_Keys[GLFW_KEY_S])
-        camera->ProcessKeyboard(BACKWARD, deltaTime);
+        m_Camera->ProcessKeyboard(BACKWARD, deltaTime);
     if (m_Keys[GLFW_KEY_A])
-        camera->ProcessKeyboard(LEFT, deltaTime);
+        m_Camera->ProcessKeyboard(LEFT, deltaTime);
     if (m_Keys[GLFW_KEY_D])
-        camera->ProcessKeyboard(RIGHT, deltaTime);
+        m_Camera->ProcessKeyboard(RIGHT, deltaTime);
     if (m_Keys[GLFW_KEY_E])
-        camera->ProcessKeyboard(UP, deltaTime);
+        m_Camera->ProcessKeyboard(UP, deltaTime);
     if (m_Keys[GLFW_KEY_Q])
-        camera->ProcessKeyboard(DOWN, deltaTime);
+        m_Camera->ProcessKeyboard(DOWN, deltaTime);
     if (m_Keys[GLFW_KEY_LEFT_SHIFT])
-        camera->ProcessKeyboard(SPEED_INCREASE, deltaTime);
+        m_Camera->ProcessKeyboard(SPEED_INCREASE, deltaTime);
 }
 
 void Game::ProcessMouse(float xpos, float ypos, float xoffset, float yoffset)
@@ -64,6 +66,6 @@ void Game::ProcessMouse(float xpos, float ypos, float xoffset, float yoffset)
 	m_Ypos = ypos;
 	m_Xoffset = xoffset;
 	m_Yoffset = yoffset;
-    camera->ProcessMouseMovement(m_Xoffset, m_Yoffset);
+    m_Camera->ProcessMouseMovement(m_Xoffset, m_Yoffset);
 }
 

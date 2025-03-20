@@ -1,12 +1,16 @@
 #include "Chunk.h"
 #include "Texture.h"
-
-Chunk::Chunk()
+#include <iostream>
+Chunk::Chunk(): Chunk(glm::vec3{0.0,0.0,0.0})
 {
+}
+
+Chunk::Chunk(glm::vec3 position): m_Position(position)
+{
+	std::cout << "Created Chunk: " << position.x << "," << position.y << "," << position.z << std::endl;
+	m_Blocks = new BlockType[WIDTH * DEPTH * HEIGHT];
 	for (unsigned int z = 0; z < Chunk::DEPTH; z++) {
-
 		for (unsigned int y = 0; y < Chunk::HEIGHT; y++) {
-
 			for (unsigned int x = 0; x < Chunk::WIDTH; x++) {
 				unsigned int index = x + (y * Chunk::WIDTH) + (z * Chunk::WIDTH * Chunk::HEIGHT);
 				m_Blocks[index] = BlockType::Dirt;
@@ -17,24 +21,18 @@ Chunk::Chunk()
 
 Chunk::~Chunk()
 {
-	delete m_Va;
-	delete m_Ib;
-	delete m_Vb;
+	std::cout << "Deleted Chunk: " << m_Position.x << "," << m_Position.y << "," << m_Position.z << std::endl;
+	delete[] m_Blocks;
 }
 
-void Chunk::UpdateVertexArray()
+void Chunk::UpdateVertices(const Chunk& leftChunk, const Chunk& rightChunk, const Chunk& frontChunk, const Chunk& backChunk)
 {
-	Vertex* vertices = new Vertex[Chunk::WIDTH * Chunk::HEIGHT * Chunk::DEPTH*24];
-	unsigned int* indices = new unsigned int[Chunk::WIDTH * Chunk::HEIGHT * Chunk::DEPTH * 36];
 	size_t verticesOffset = 0;
 	size_t indicesOffset = 0;
 	for (unsigned int z = 0; z < Chunk::DEPTH; z++) {
-
 		for (unsigned int y = 0; y < Chunk::HEIGHT; y++) {
-
 			for (unsigned int x = 0; x < Chunk::WIDTH; x++) {
 				unsigned int index = x + (y * Chunk::WIDTH) + (z * Chunk::WIDTH * Chunk::HEIGHT);
-				// TODO: if air don't generate verts
 				if (m_Blocks[index] == BlockType::Air) continue;
 				if (x > 0 && x < Chunk::WIDTH - 1 && y > 0 && y < Chunk::HEIGHT - 1 && z > 0 && z < Chunk::DEPTH - 1) {
 					unsigned int indexAbove = x + ((y+1) * Chunk::WIDTH) + (z * Chunk::WIDTH * Chunk::HEIGHT);
@@ -53,38 +51,29 @@ void Chunk::UpdateVertexArray()
 						)
 						continue;
 				}
-				glm::vec3 position = {x,y,z};
-				std::array<Vertex, 24> blockVertices = Chunk::GenerateBlockVerts(position, m_Blocks[index]);
-				unsigned int blockIndices[36] = {
-					verticesOffset,verticesOffset + 1,verticesOffset + 2,verticesOffset,verticesOffset + 2,verticesOffset + 3,
-					verticesOffset +4, verticesOffset +5, verticesOffset +6, verticesOffset +4, verticesOffset +6, verticesOffset +7,
-					verticesOffset +8, verticesOffset +9, verticesOffset +10, verticesOffset +8, verticesOffset +10, verticesOffset +11,
-					verticesOffset +12, verticesOffset +13, verticesOffset +14, verticesOffset +12, verticesOffset +14, verticesOffset +15,
-					verticesOffset +16, verticesOffset +17,verticesOffset + 18,verticesOffset + 16, verticesOffset +18, verticesOffset +19,
-					verticesOffset +20, verticesOffset +21, verticesOffset +22, verticesOffset +20, verticesOffset +22, verticesOffset +23,
-				};
-				memcpy(vertices+verticesOffset, blockVertices.data(), blockVertices.size() * sizeof(Vertex));
-				memcpy(indices+indicesOffset, blockIndices, 36 * sizeof(unsigned int));
-				verticesOffset += blockVertices.size();
-				indicesOffset += 36;
+				glm::vec3 position = glm::vec3{x,y,z}+m_Position;
+				GenerateBlockVerts(position, m_Blocks[index]);
 			}
 		}
 	}
-	m_Va = new VertexArray();
-	m_Va->Bind();
-	m_Vb = new VertexBuffer(vertices, Chunk::WIDTH*Chunk::HEIGHT*Chunk::DEPTH*24);
-	m_Vb->Bind();
-	m_Va->AddBlockBuffer(*m_Vb);
-
-	m_Ib = new IndexBuffer(indices, Chunk::WIDTH*Chunk::HEIGHT*Chunk::DEPTH*36);
-	m_Ib->Bind();
-	delete[] vertices;
-	delete[] indices;
 }
 
-std::array<Vertex, 24> Chunk::GenerateBlockVerts(glm::vec3 position, BlockType type)
+void Chunk::Draw(const Renderer& renderer)
 {
-	std::array<Vertex, 24> vertices;
+	VertexArray va = VertexArray();
+	va.Bind();
+	VertexBuffer vb = VertexBuffer(&m_Vertices[0], m_Vertices.size());
+	vb.Bind();
+	va.AddBlockBuffer(vb);
+	IndexBuffer ib = IndexBuffer(&m_Indices[0], m_Indices.size());
+	ib.Bind();
+	m_Vertices.clear();
+	m_Indices.clear();
+	renderer.Draw(va,ib);
+}
+
+void Chunk::GenerateBlockVerts(const glm::vec3& position, const BlockType& type)
+{
 	glm::vec3 leftDownBack = { 0.0,0.0,0.0 };
 	glm::vec3 rightDownBack = { 1.0,0.0,0.0 };
 	glm::vec3 rightUpBack = { 1.0,1.0,0.0 };
@@ -138,35 +127,47 @@ std::array<Vertex, 24> Chunk::GenerateBlockVerts(glm::vec3 position, BlockType t
 	glm::vec2 rightUp = { Texture::m_Offset,Texture::m_Offset };
 	glm::vec2 leftUp = { 0.0,Texture::m_Offset };
 	glm::vec2 leftDown = { 0.0,0.0 };
-	//FRONT*
-	vertices[0] = { position + rightDownFront,frontTexCoords + rightDown };
-	vertices[1] = { position + leftDownFront,	frontTexCoords + leftDown };
-	vertices[2] = { position + leftUpFront,	frontTexCoords + leftUp };
-	vertices[3] = { position + rightUpFront,	frontTexCoords + rightUp };
+	unsigned int verticesOffset = m_Vertices.size();
+	//FRONT
+	verticesOffset = m_Vertices.size();
+	m_Indices.insert(m_Indices.end(), { verticesOffset,verticesOffset + 1,verticesOffset + 2,verticesOffset,verticesOffset + 2,verticesOffset + 3 });
+	m_Vertices.push_back({ position + rightDownFront,frontTexCoords + rightDown });
+	m_Vertices.push_back({ position + leftDownFront,	frontTexCoords + leftDown });
+	m_Vertices.push_back({ position + leftUpFront,	frontTexCoords + leftUp });
+	m_Vertices.push_back({ position + rightUpFront,	frontTexCoords + rightUp });
 	//RIGHT
-	vertices[4] = { position + rightDownBack,	rightTexCoords + rightDown };
-	vertices[5] = { position + rightDownFront,rightTexCoords + leftDown };
-	vertices[6] = { position + rightUpFront,	rightTexCoords + leftUp };
-	vertices[7] = { position + rightUpBack,	rightTexCoords + rightUp };
-	//BACK*
-	vertices[8] = { position + leftDownBack,	backTexCoords + rightDown };
-	vertices[9] = { position + rightDownBack,backTexCoords + leftDown };
-	vertices[10] = { position + rightUpBack,	backTexCoords + leftUp };
-	vertices[11] = { position + leftUpBack,	backTexCoords + rightUp };
-	//LEFT*
-	vertices[12] = { position + leftDownFront,leftTexCoords + rightDown };
-	vertices[13] = { position + leftDownBack,	leftTexCoords + leftDown };
-	vertices[14] = { position + leftUpBack,	leftTexCoords + leftUp };
-	vertices[15] = { position + leftUpFront,	leftTexCoords + rightUp };
-	//TOP*
-	vertices[16] = { position + rightUpFront,	topTexCoords + rightDown };
-	vertices[17] = { position + leftUpFront,	topTexCoords + leftDown };
-	vertices[18] = { position + leftUpBack,	topTexCoords + leftUp };
-	vertices[19] = { position + rightUpBack,	topTexCoords + rightUp };
-	//BOTTOM*
-	vertices[20] = { position + leftDownFront,	bottomTexCoords + leftUp };
-	vertices[21] = { position + rightDownFront,bottomTexCoords + rightUp };
-	vertices[22] = { position + rightDownBack,	bottomTexCoords + rightDown };
-	vertices[23] = { position + leftDownBack,	bottomTexCoords + leftDown };
-	return vertices;
+	verticesOffset = m_Vertices.size();
+	m_Indices.insert(m_Indices.end(), { verticesOffset,verticesOffset + 1,verticesOffset + 2,verticesOffset,verticesOffset + 2,verticesOffset + 3 });
+	m_Vertices.push_back({ position + rightDownBack,	rightTexCoords + rightDown });
+	m_Vertices.push_back({ position + rightDownFront,rightTexCoords + leftDown });
+	m_Vertices.push_back({ position + rightUpFront,	rightTexCoords + leftUp });
+	m_Vertices.push_back({ position + rightUpBack,	rightTexCoords + rightUp });
+	//BACK
+	verticesOffset = m_Vertices.size();
+	m_Indices.insert(m_Indices.end(), { verticesOffset,verticesOffset + 1,verticesOffset + 2,verticesOffset,verticesOffset + 2,verticesOffset + 3 });
+	m_Vertices.push_back({ position + leftDownBack,	backTexCoords + rightDown });
+	m_Vertices.push_back({ position + rightDownBack,backTexCoords + leftDown });
+	m_Vertices.push_back({ position + rightUpBack,	backTexCoords + leftUp });
+	m_Vertices.push_back({ position + leftUpBack,	backTexCoords + rightUp });
+	//LEFT
+	verticesOffset = m_Vertices.size();
+	m_Indices.insert(m_Indices.end(), { verticesOffset,verticesOffset + 1,verticesOffset + 2,verticesOffset,verticesOffset + 2,verticesOffset + 3 });
+	m_Vertices.push_back({ position + leftDownFront,leftTexCoords + rightDown });
+	m_Vertices.push_back({ position + leftDownBack,	leftTexCoords + leftDown });
+	m_Vertices.push_back({ position + leftUpBack,	leftTexCoords + leftUp });
+	m_Vertices.push_back({ position + leftUpFront,	leftTexCoords + rightUp });
+	//TOP
+	verticesOffset = m_Vertices.size();
+	m_Indices.insert(m_Indices.end(), { verticesOffset,verticesOffset + 1,verticesOffset + 2,verticesOffset,verticesOffset + 2,verticesOffset + 3 });
+	m_Vertices.push_back({ position + rightUpFront,	topTexCoords + rightDown });
+	m_Vertices.push_back({ position + leftUpFront,	topTexCoords + leftDown });
+	m_Vertices.push_back({ position + leftUpBack,	topTexCoords + leftUp });
+	m_Vertices.push_back({ position + rightUpBack,	topTexCoords + rightUp });
+	//BOTTOM
+	verticesOffset = m_Vertices.size();
+	m_Indices.insert(m_Indices.end(), { verticesOffset,verticesOffset + 1,verticesOffset + 2,verticesOffset,verticesOffset + 2,verticesOffset + 3 });
+	m_Vertices.push_back({ position + leftDownFront,	bottomTexCoords + leftUp });
+	m_Vertices.push_back({ position + rightDownFront,bottomTexCoords + rightUp });
+	m_Vertices.push_back({ position + rightDownBack,	bottomTexCoords + rightDown });
+	m_Vertices.push_back({ position + leftDownBack,	bottomTexCoords + leftDown });
 }
