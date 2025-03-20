@@ -18,10 +18,10 @@ void World::UpdateChunksToRender(const glm::vec3& playerPosition)
 		zRemainder += Chunk::DEPTH;
 	int currentChunkX = playerPosition.x - xRemainder;
 	int currentChunkZ = playerPosition.z - zRemainder;
-	glm::vec3 topLeftChunkPosition = { currentChunkX-(int)Chunk::WIDTH, 0.0, currentChunkZ-(int)Chunk::DEPTH };
-	for (unsigned int z=0; z < 3; z++) {
-		for (unsigned int x=0; x < 3; x++) {
-			unsigned int index = x + (3 * z);
+	glm::vec3 topLeftChunkPosition = { currentChunkX-(int)RENDER_DISTANCE*Chunk::WIDTH, 0.0, currentChunkZ-(int)RENDER_DISTANCE*Chunk::DEPTH };
+	for (unsigned int z=0; z < RENDER_DISTANCE*2+1; z++) {
+		for (unsigned int x=0; x < RENDER_DISTANCE*2+1; x++) {
+			unsigned int index = x + ((RENDER_DISTANCE*2+1) * z);
 			glm::vec3 newPosition = topLeftChunkPosition + glm::vec3{x*Chunk::WIDTH,0.0,z*Chunk::DEPTH};
 			m_ChunksToRender[index] = newPosition;
 		}

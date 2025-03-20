@@ -10,13 +10,14 @@ public:
 	~Chunk();
 	void UpdateVertices(const Chunk& leftChunk,const Chunk& rightChunk,const Chunk& frontChunk,const Chunk& backChunk);
 	void Draw(const Renderer& renderer);
-	const static unsigned int HEIGHT = 10;
-	const static unsigned int WIDTH = 16;
-	const static unsigned int DEPTH = 16;
+	const static int HEIGHT = 50;
+	const static int WIDTH = 16;
+	const static int DEPTH = 16;
 private:
+	inline int PositionToIndex(int x,int y, int z)const { return x + (z * Chunk::WIDTH) + (y * Chunk::WIDTH * Chunk::DEPTH); }
 	std::vector<Vertex> m_Vertices;
 	std::vector<unsigned int> m_Indices;
-	void GenerateBlockVerts(const glm::vec3& position, const BlockType& type);
+	void GenerateBlockVerts(const glm::vec3& position, const BlockType& type, const bool* neighbours);
 	BlockType* m_Blocks;
 	glm::vec3 m_Position;
 };

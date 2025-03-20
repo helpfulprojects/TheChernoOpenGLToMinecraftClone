@@ -15,7 +15,7 @@ Game::~Game()
 }
 void Game::Init()
 {
-	m_Camera = new Camera(glm::vec3(0.0f, 30.0f, 0.0f));
+	m_Camera = new Camera(glm::vec3(0.0f, 60.0f, 0.0f));
 	m_Renderer = new Renderer();
 	m_World = new World();
 	shader = new Shader("res/shaders/Basic.shader");
