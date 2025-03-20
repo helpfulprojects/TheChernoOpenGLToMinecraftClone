@@ -50,10 +50,12 @@ void Game::ProcessInput(float deltaTime)
         camera->ProcessKeyboard(LEFT, deltaTime);
     if (m_Keys[GLFW_KEY_D])
         camera->ProcessKeyboard(RIGHT, deltaTime);
-    if (m_Keys[GLFW_KEY_SPACE])
+    if (m_Keys[GLFW_KEY_E])
         camera->ProcessKeyboard(UP, deltaTime);
-    if (m_Keys[GLFW_KEY_LEFT_SHIFT])
+    if (m_Keys[GLFW_KEY_Q])
         camera->ProcessKeyboard(DOWN, deltaTime);
+    if (m_Keys[GLFW_KEY_LEFT_SHIFT])
+        camera->ProcessKeyboard(SPEED_INCREASE, deltaTime);
 }
 
 void Game::ProcessMouse(float xpos, float ypos, float xoffset, float yoffset)
