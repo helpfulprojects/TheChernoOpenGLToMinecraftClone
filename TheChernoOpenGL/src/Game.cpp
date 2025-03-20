@@ -15,7 +15,7 @@ Game::~Game()
 }
 void Game::Init()
 {
-	m_Camera = new Camera(glm::vec3(0.0f, 60.0f, 0.0f));
+	m_Camera = new Camera(glm::vec3(0.0f, 51.0f, 0.0f));
 	m_Renderer = new Renderer();
 	m_World = new World();
 	shader = new Shader("res/shaders/Basic.shader");
@@ -24,11 +24,12 @@ void Game::Init()
 	texture->Bind();
 	shader->Uniform1i("u_Texture", 0);
 	shader->Unbind();
+	m_World->UpdateChunksToRender(m_Camera->Position);
+	m_Renderer->AddVertices(m_World->GetWorldBlocksVertecies());
 }
 void Game::Update(float deltaTime)
 {
 	std::cout <<"FPS:" << 1 / deltaTime << std::endl;
-	m_World->UpdateChunksToRender(m_Camera->Position);
 }
 void Game::Render()
 {
@@ -38,8 +39,7 @@ void Game::Render()
 	glm::mat4 model = glm::mat4(1.0f); 
 	glm::mat4 mvp = proj * view * model;
 	shader->UniformMatrix4fv("u_MVP", mvp);
-	m_World->UpdateVertexArrays();
-	m_World->Draw(*m_Renderer);
+	m_Renderer->Draw();
 }
 void Game::ProcessInput(float deltaTime)
 {
