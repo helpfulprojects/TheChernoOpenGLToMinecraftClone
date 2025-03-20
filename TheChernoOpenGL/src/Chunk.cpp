@@ -22,7 +22,12 @@ Chunk::Chunk(glm::vec3 position): m_Position(position)
 		for (unsigned int z = 0; z < Chunk::DEPTH; z++) {
 			for (unsigned int x = 0; x < Chunk::WIDTH; x++) {
 				unsigned int index = PositionToIndex(x, y, z);
-				m_Blocks[index] = BlockType::Dirt;
+				if (y == Chunk::HEIGHT - 1) {
+					m_Blocks[index] = BlockType::Grass;
+				}
+				else {
+					m_Blocks[index] = BlockType::Dirt;
+				}
 			}
 		}
 	}
