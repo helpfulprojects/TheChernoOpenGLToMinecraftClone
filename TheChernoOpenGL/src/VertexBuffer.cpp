@@ -5,7 +5,15 @@ VertexBuffer::VertexBuffer(const float* data,unsigned int count): m_Count(count)
 {
 	GlCall(glGenBuffers(1, &m_RendererID));
 	Bind();
-	glBufferData(GL_ARRAY_BUFFER, count*sizeof(float), data, GL_STATIC_DRAW);
+	GlCall(glBufferData(GL_ARRAY_BUFFER, count*sizeof(float), data, GL_STATIC_DRAW));
+	Unbind();
+}
+
+VertexBuffer::VertexBuffer(const Vertex* data, unsigned int count)
+{
+	GlCall(glGenBuffers(1, &m_RendererID));
+	Bind();
+	GlCall(glBufferData(GL_ARRAY_BUFFER, count*sizeof(Vertex), data, GL_STATIC_DRAW));
 	Unbind();
 }
 

@@ -7,6 +7,7 @@ public:
 	~VertexArray();
 
 	void AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& layout);
+	void AddBlockBuffer(const VertexBuffer& vb);
 
 	void Bind() const;
 	void Unbind() const;

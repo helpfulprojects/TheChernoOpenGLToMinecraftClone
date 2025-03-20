@@ -16,3 +16,9 @@ void Renderer::Draw(const VertexArray& va, const Shader& shader) const
 	va.Bind();
 	GlCall(glDrawArrays(GL_TRIANGLES, 0, va.GetVerticesCount()));
 }
+
+void Renderer::Draw(const Chunk& chunk, const Shader& shader) const
+{
+	chunk.m_Va->Bind();
+	GlCall(glDrawElements(GL_TRIANGLES, chunk.m_Ib->GetCount(), GL_UNSIGNED_INT, nullptr));
+}

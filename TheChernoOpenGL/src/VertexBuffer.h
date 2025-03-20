@@ -1,8 +1,9 @@
 #pragma once
-
+#include "Block.h"
 class VertexBuffer {
 public:
 	VertexBuffer(const float* data,unsigned int count);
+	VertexBuffer(const Vertex* data,unsigned int count);
 	~VertexBuffer();
 
 	void Bind() const;

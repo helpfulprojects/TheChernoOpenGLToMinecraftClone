@@ -28,6 +28,16 @@ void VertexArray::AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& la
 	m_VerticesCount = vb.GetCount() / vertexElementsCount;
 }
 
+void VertexArray::AddBlockBuffer(const VertexBuffer& vb)
+{
+	Bind();
+	vb.Bind();
+	GlCall(glEnableVertexAttribArray(0));
+	GlCall(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex,Position)));
+	GlCall(glEnableVertexAttribArray(1));
+	GlCall(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex,TexCoords)));
+}
+
 void VertexArray::Bind() const
 {
 	GlCall(glBindVertexArray(m_RendererID));

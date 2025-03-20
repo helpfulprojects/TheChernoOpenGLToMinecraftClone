@@ -21,8 +21,7 @@ public:
 private:
 	unsigned int vao;
 	Shader* shader;
-	VertexArray* va;
-	IndexBuffer* ib;
+	Chunk* chunk;
 	Texture* texture;
 	Camera* camera;
 	glm::vec3 translate;

@@ -9,8 +9,7 @@ Game::~Game()
 {
 	delete shader;
 	delete m_Renderer;
-	delete va;
-	delete ib;
+	delete chunk;
 	delete texture;
 	delete camera;
 }
@@ -18,70 +17,14 @@ void Game::Init()
 {
 	camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
 	m_Renderer = new Renderer();
-	float vertices[] = {
-			 //FRONT
-			 0.0, 0.0, 1.0,  Texture::AtlasBlockX(3),					Texture::AtlasBlockY(0),
-			 1.0, 0.0, 1.0,  Texture::AtlasBlockX(3)+Texture::m_Offset, Texture::AtlasBlockY(0),
-			 1.0, 1.0, 1.0,  Texture::AtlasBlockX(3)+Texture::m_Offset, Texture::AtlasBlockY(0)+Texture::m_Offset,
-			 0.0, 1.0, 1.0,  Texture::AtlasBlockX(3),					Texture::AtlasBlockY(0)+Texture::m_Offset,
-			 //RIGHT	
-			 1.0, 0.0, 1.0,  Texture::AtlasBlockX(3),					Texture::AtlasBlockY(0),
-			 1.0, 0.0, 0.0,  Texture::AtlasBlockX(3)+Texture::m_Offset, Texture::AtlasBlockY(0),
-			 1.0, 1.0, 0.0,  Texture::AtlasBlockX(3)+Texture::m_Offset, Texture::AtlasBlockY(0) + Texture::m_Offset,
-			 1.0, 1.0, 1.0,  Texture::AtlasBlockX(3),					Texture::AtlasBlockY(0) + Texture::m_Offset,
-			 //BACK
-			 0.0, 0.0, 0.0,  Texture::AtlasBlockX(3)+Texture::m_Offset, Texture::AtlasBlockY(0),
-			 1.0, 0.0, 0.0,  Texture::AtlasBlockX(3),					Texture::AtlasBlockY(0),
-			 1.0, 1.0, 0.0,  Texture::AtlasBlockX(3),					Texture::AtlasBlockY(0) + Texture::m_Offset,
-			 0.0, 1.0, 0.0,  Texture::AtlasBlockX(3)+Texture::m_Offset, Texture::AtlasBlockY(0) + Texture::m_Offset,
-			 //LEFT	
-			 0.0, 0.0, 1.0,  Texture::AtlasBlockX(3)+Texture::m_Offset, Texture::AtlasBlockY(0),
-			 0.0, 0.0, 0.0,  Texture::AtlasBlockX(3),					Texture::AtlasBlockY(0),
-			 0.0, 1.0, 0.0,  Texture::AtlasBlockX(3),					Texture::AtlasBlockY(0) + Texture::m_Offset,
-			 0.0, 1.0, 1.0,  Texture::AtlasBlockX(3)+Texture::m_Offset, Texture::AtlasBlockY(0) + Texture::m_Offset,
-			 //TOP	
-			 0.0, 1.0, 1.0,  Texture::AtlasBlockX(0),					Texture::AtlasBlockY(0),
-			 1.0, 1.0, 1.0,  Texture::AtlasBlockX(0)+Texture::m_Offset, Texture::AtlasBlockY(0),
-			 1.0, 1.0, 0.0,  Texture::AtlasBlockX(0)+Texture::m_Offset, Texture::AtlasBlockY(0) + Texture::m_Offset,
-			 0.0, 1.0, 0.0,  Texture::AtlasBlockX(0),					Texture::AtlasBlockY(0) + Texture::m_Offset,
-			 //BOTTOM	
-			 0.0, 0.0, 1.0,  Texture::AtlasBlockX(2),					Texture::AtlasBlockY(0) + Texture::m_Offset,
-			 1.0, 0.0, 1.0,  Texture::AtlasBlockX(2)+Texture::m_Offset, Texture::AtlasBlockY(0) + Texture::m_Offset,
-			 1.0, 0.0, 0.0,  Texture::AtlasBlockX(2)+Texture::m_Offset, Texture::AtlasBlockY(0),
-			 0.0, 0.0, 0.0,  Texture::AtlasBlockX(2),					Texture::AtlasBlockY(0),
-	};
-	unsigned int indices[] = {
-		0, 1, 2, 0, 2, 3,
-		4, 5, 6, 4, 6, 7,
-		8, 9, 10, 8, 10, 11,
-		12, 13, 14, 12, 14, 15,
-		16, 17, 18, 16, 18, 19,
-		20, 21, 22, 20, 22, 23,
-	};
-	va = new VertexArray();
-	VertexBuffer vb(vertices, 6*4*5);
-	vb.Bind();
-
-	VertexBufferLayout layout;
-	layout.Push<float>(3);
-	layout.Push<float>(2);
-	va->AddBuffer(vb, layout);
-
-	ib = new IndexBuffer(indices, 6*6);
-	ib->Bind();
-
+	chunk = new Chunk();
+	chunk->UpdateVertexArray();
 	shader = new Shader("res/shaders/Basic.shader");
 	shader->Bind();
 	texture = new Texture("res/textures/atlas.png");
 	texture->Bind();
 	shader->Uniform1i("u_Texture", 0);
-
-	proj = glm::perspective(glm::radians(45.0f), (float)m_SCR_WIDTH / (float)m_SCR_HEIGHT, 0.1f, 100.0f);
-	translate = { 0.0,0.0,0.0 };
-
-	va->Unbind();
 	shader->Unbind();
-
 }
 void Game::Update(float deltaTime)
 {
@@ -94,7 +37,7 @@ void Game::Render()
 	glm::mat4 model = glm::mat4(1.0f); 
 	glm::mat4 mvp = proj * view * model;
 	shader->UniformMatrix4fv("u_MVP", mvp);
-	m_Renderer->Draw(*va, *ib, *shader);
+	m_Renderer->Draw(*chunk, *shader);
 }
 void Game::ProcessInput(float deltaTime)
 {
