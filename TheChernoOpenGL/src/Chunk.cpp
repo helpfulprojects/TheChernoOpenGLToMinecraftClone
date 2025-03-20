@@ -35,6 +35,24 @@ void Chunk::UpdateVertexArray()
 			for (unsigned int x = 0; x < Chunk::WIDTH; x++) {
 				unsigned int index = x + (y * Chunk::WIDTH) + (z * Chunk::WIDTH * Chunk::HEIGHT);
 				// TODO: if air don't generate verts
+				if (m_Blocks[index] == BlockType::Air) continue;
+				if (x > 0 && x < Chunk::WIDTH - 1 && y > 0 && y < Chunk::HEIGHT - 1 && z > 0 && z < Chunk::DEPTH - 1) {
+					unsigned int indexAbove = x + ((y+1) * Chunk::WIDTH) + (z * Chunk::WIDTH * Chunk::HEIGHT);
+					unsigned int indexBellow = x + ((y-1) * Chunk::WIDTH) + (z * Chunk::WIDTH * Chunk::HEIGHT);
+					unsigned int indexLeft = x-1 + (y * Chunk::WIDTH) + (z * Chunk::WIDTH * Chunk::HEIGHT);
+					unsigned int indexRight = x+1 + (y * Chunk::WIDTH) + (z * Chunk::WIDTH * Chunk::HEIGHT);
+					unsigned int indexFront = x + (y * Chunk::WIDTH) + ((z+1) * Chunk::WIDTH * Chunk::HEIGHT);
+					unsigned int indexBack = x + (y * Chunk::WIDTH) + ((z-1) * Chunk::WIDTH * Chunk::HEIGHT);
+					if (
+						m_Blocks[indexAbove] != BlockType::Air ||
+						m_Blocks[indexBellow] != BlockType::Air ||
+						m_Blocks[indexLeft] != BlockType::Air ||
+						m_Blocks[indexRight] != BlockType::Air ||
+						m_Blocks[indexFront] != BlockType::Air ||
+						m_Blocks[indexBack] != BlockType::Air
+						)
+						continue;
+				}
 				glm::vec3 position = {x,y,z};
 				std::array<Vertex, 24> blockVertices = Chunk::GenerateBlockVerts(position, m_Blocks[index]);
 				unsigned int blockIndices[36] = {
