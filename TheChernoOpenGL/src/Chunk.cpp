@@ -138,32 +138,32 @@ std::array<Vertex, 24> Chunk::GenerateBlockVerts(glm::vec3 position, BlockType t
 	glm::vec2 rightUp = { Texture::m_Offset,Texture::m_Offset };
 	glm::vec2 leftUp = { 0.0,Texture::m_Offset };
 	glm::vec2 leftDown = { 0.0,0.0 };
-	//FRONT
-	vertices[0] = { position + leftDownFront,	frontTexCoords + leftDown };
-	vertices[1] = { position + rightDownFront,frontTexCoords + rightDown };
-	vertices[2] = { position + rightUpFront,	frontTexCoords + rightUp };
-	vertices[3] = { position + leftUpFront,	frontTexCoords + leftUp };
+	//FRONT*
+	vertices[0] = { position + rightDownFront,frontTexCoords + rightDown };
+	vertices[1] = { position + leftDownFront,	frontTexCoords + leftDown };
+	vertices[2] = { position + leftUpFront,	frontTexCoords + leftUp };
+	vertices[3] = { position + rightUpFront,	frontTexCoords + rightUp };
 	//RIGHT
-	vertices[4] = { position + rightDownFront,rightTexCoords + leftDown };
-	vertices[5] = { position + rightDownBack,	rightTexCoords + rightDown };
-	vertices[6] = { position + rightUpBack,	rightTexCoords + rightUp };
-	vertices[7] = { position + rightUpFront,	rightTexCoords + leftUp };
-	//BACK
+	vertices[4] = { position + rightDownBack,	rightTexCoords + rightDown };
+	vertices[5] = { position + rightDownFront,rightTexCoords + leftDown };
+	vertices[6] = { position + rightUpFront,	rightTexCoords + leftUp };
+	vertices[7] = { position + rightUpBack,	rightTexCoords + rightUp };
+	//BACK*
 	vertices[8] = { position + leftDownBack,	backTexCoords + rightDown };
 	vertices[9] = { position + rightDownBack,backTexCoords + leftDown };
 	vertices[10] = { position + rightUpBack,	backTexCoords + leftUp };
 	vertices[11] = { position + leftUpBack,	backTexCoords + rightUp };
-	//LEFT
+	//LEFT*
 	vertices[12] = { position + leftDownFront,leftTexCoords + rightDown };
 	vertices[13] = { position + leftDownBack,	leftTexCoords + leftDown };
 	vertices[14] = { position + leftUpBack,	leftTexCoords + leftUp };
 	vertices[15] = { position + leftUpFront,	leftTexCoords + rightUp };
-	//TOP
-	vertices[16] = { position + leftUpFront,	topTexCoords + leftDown };
-	vertices[17] = { position + rightUpFront,	topTexCoords + rightDown };
-	vertices[18] = { position + rightUpBack,	topTexCoords + rightUp };
-	vertices[19] = { position + leftUpBack,	topTexCoords + leftUp };
-	//BOTTOM
+	//TOP*
+	vertices[16] = { position + rightUpFront,	topTexCoords + rightDown };
+	vertices[17] = { position + leftUpFront,	topTexCoords + leftDown };
+	vertices[18] = { position + leftUpBack,	topTexCoords + leftUp };
+	vertices[19] = { position + rightUpBack,	topTexCoords + rightUp };
+	//BOTTOM*
 	vertices[20] = { position + leftDownFront,	bottomTexCoords + leftUp };
 	vertices[21] = { position + rightDownFront,bottomTexCoords + rightUp };
 	vertices[22] = { position + rightDownBack,	bottomTexCoords + rightDown };

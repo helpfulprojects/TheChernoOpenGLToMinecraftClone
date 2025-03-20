@@ -90,6 +90,9 @@ int main(void)
 	game = new Game(SCR_WIDTH,SCR_HEIGHT);
 	GlCall(glEnable(GL_BLEND));
 	GlCall(glEnable(GL_DEPTH_TEST));
+	GlCall(glEnable(GL_CULL_FACE));
+	GlCall(glCullFace(GL_BACK));
+	GlCall(glFrontFace(GL_CW));
 	GlCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	game->Init();
 	float deltaTime = 0.0f;
