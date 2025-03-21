@@ -34,7 +34,7 @@ void Game::Update(float deltaTime)
 void Game::Render()
 {
 	shader->Bind();
-	glm::mat4 proj = glm::perspective(glm::radians(m_Camera->Zoom), (float)m_SCR_WIDTH / (float)m_SCR_HEIGHT, 0.1f, 100.0f);
+	glm::mat4 proj = glm::perspective(glm::radians(m_Camera->Zoom), (float)m_SCR_WIDTH / (float)m_SCR_HEIGHT, 0.1f, 500.0f);
 	glm::mat4 view = m_Camera->GetViewMatrix();
 	glm::mat4 model = glm::mat4(1.0f); 
 	glm::mat4 mvp = proj * view * model;
