@@ -66,14 +66,44 @@ void ThreadPool::EnqueueChunkLoading(const Chunk* currentChunk, const Chunk* lef
         chunksVerticesForRenderer[currentChunk->GetPosition()] = std::vector<Vertex>(); 
     }
 	enqueue([this, currentChunk, leftChunk, rightChunk, frontChunk, backChunk]() {
-			ChunkLoading(currentChunk, leftChunk, rightChunk, frontChunk, backChunk);
+			std::vector<Vertex> vertices = currentChunk->GetChunkBlocksVertecies(leftChunk, rightChunk, frontChunk, backChunk);
+			
+			{
+				std::lock_guard<std::mutex> lock(chunksVerticesMtx);
+				chunksVerticesForRenderer[currentChunk->GetPosition()] = vertices; 
+			}
+		});
+}
+
+void ThreadPool::EnqueueChunkGeneration(glm::vec3 chunkOrigin)
+{
+    {
+        std::lock_guard<std::mutex> lock(generatedChunksMtx);
+        generatedChunks[chunkOrigin] = nullptr; 
+    }
+	enqueue([this,chunkOrigin]() {
+
+			Chunk* generatedChunk = new Chunk(chunkOrigin);
+			{
+				std::lock_guard<std::mutex> lock(generatedChunksMtx);
+				generatedChunks[chunkOrigin] = generatedChunk; 
+			}
 		});
 }
 
 bool ThreadPool::IsChunkBeingLoaded(const glm::vec3& chunkOrigin)
 {
-	std::lock_guard<std::mutex> lock(chunksVerticesMtx);
     return chunksVerticesForRenderer.find(chunkOrigin) != chunksVerticesForRenderer.end();
+}
+
+bool ThreadPool::IsChunkBeingGenerated(const glm::vec3& chunkOrigin)
+{
+	return generatedChunks.find(chunkOrigin) != generatedChunks.end();
+}
+
+bool ThreadPool::HasChunkGenerated(const glm::vec3& chunkOrigin)
+{
+	return IsChunkBeingGenerated(chunkOrigin) && generatedChunks[chunkOrigin];
 }
 
 bool ThreadPool::HasChunkLoaded(const glm::vec3& chunkOrigin)
@@ -89,13 +119,11 @@ std::vector<Vertex> ThreadPool::GetChunkVertices(const glm::vec3& chunkOrigin)
 	return vertices;
 }
 
-void ThreadPool::ChunkLoading(const Chunk* currentChunk, const Chunk* leftChunk, const Chunk* rightChunk, const Chunk* frontChunk, const Chunk* backChunk)
+Chunk* ThreadPool::GetGeneratedChunk(const glm::vec3& chunkOrigin)
 {
-
-	std::vector<Vertex> vertices = currentChunk->GetChunkBlocksVertecies(*leftChunk, *rightChunk, *frontChunk, *backChunk);
-    
-    {
-        std::lock_guard<std::mutex> lock(chunksVerticesMtx);
-        chunksVerticesForRenderer[currentChunk->GetPosition()] = vertices; 
-    }
+	std::lock_guard<std::mutex> lock(generatedChunksMtx);
+	Chunk* generatedChunk = generatedChunks[chunkOrigin];
+	generatedChunks.erase(generatedChunks.find(chunkOrigin));
+	return generatedChunk;
 }
+

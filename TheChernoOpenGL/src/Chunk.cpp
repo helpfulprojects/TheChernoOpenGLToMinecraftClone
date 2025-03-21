@@ -34,7 +34,7 @@ int_fast8_t Chunk::GetBlock(int x, int y, int z) const
 {
 	if(y>40)
 		return (int_fast8_t)BlockType::Air;
-	const double noise = perlin.normalizedOctave2D((float)x*.02f, (float)z*.02f,1)*20.0f;
+	const double noise = perlin.normalizedOctave2D((float)x*.02f, (float)z*.02f,4)*20.0f;
 	int surfaceY = 20+noise;
 	if (y < surfaceY) {
 		return (int_fast8_t)BlockType::Grass;
@@ -49,7 +49,7 @@ Chunk::~Chunk()
 	//std::cout << "Deleted Chunk: " << m_Position.x << "," << m_Position.y << "," << m_Position.z << std::endl;
 }
 
-std::vector<Vertex> Chunk::GetChunkBlocksVertecies(const Chunk& rightChunk, const Chunk& leftChunk, const Chunk& frontChunk, const Chunk& backChunk) const
+std::vector<Vertex> Chunk::GetChunkBlocksVertecies(const Chunk* rightChunk, const Chunk* leftChunk, const Chunk* frontChunk, const Chunk* backChunk) const
 {
 	auto start = std::chrono::high_resolution_clock::now();
 	std::vector<Vertex> vertices;
@@ -64,16 +64,16 @@ std::vector<Vertex> Chunk::GetChunkBlocksVertecies(const Chunk& rightChunk, cons
 				int neighbourIndex = 0;
 				neighbourIndex = PositionToIndex(x, y, z+1);
 				neighbours[(int)BlockSides::FRONT] = z<Chunk::DEPTH-1 && m_Blocks[neighbourIndex] != (int_fast8_t)BlockType::Air;
-				neighbours[(int)BlockSides::FRONT] = neighbours[(int)BlockSides::FRONT] || (z==Chunk::DEPTH-1 && frontChunk.m_Blocks[PositionToIndex(x,y,0)]!=(int_fast8_t)BlockType::Air);
+				neighbours[(int)BlockSides::FRONT] = neighbours[(int)BlockSides::FRONT] || (frontChunk && z==Chunk::DEPTH-1 && frontChunk->m_Blocks[PositionToIndex(x,y,0)]!=(int_fast8_t)BlockType::Air);
 				neighbourIndex = PositionToIndex(x+1, y, z);
 				neighbours[(int)BlockSides::RIGHT] = x<Chunk::WIDTH-1 &&  m_Blocks[neighbourIndex] != (int_fast8_t)BlockType::Air;
-				neighbours[(int)BlockSides::RIGHT] = neighbours[(int)BlockSides::RIGHT] || (x==Chunk::WIDTH-1 && rightChunk.m_Blocks[PositionToIndex(0,y,z)]!=(int_fast8_t)BlockType::Air);
+				neighbours[(int)BlockSides::RIGHT] = neighbours[(int)BlockSides::RIGHT] || (rightChunk && x==Chunk::WIDTH-1 && rightChunk->m_Blocks[PositionToIndex(0,y,z)]!=(int_fast8_t)BlockType::Air);
 				neighbourIndex = PositionToIndex(x, y, z-1);
 				neighbours[(int)BlockSides::BACK] = z>0 &&  m_Blocks[neighbourIndex] != (int_fast8_t)BlockType::Air;
-				neighbours[(int)BlockSides::BACK] = neighbours[(int)BlockSides::BACK] || (z==0 && backChunk.m_Blocks[PositionToIndex(x,y,Chunk::DEPTH-1)]!=(int_fast8_t)BlockType::Air);
+				neighbours[(int)BlockSides::BACK] = neighbours[(int)BlockSides::BACK] || (backChunk && z==0 && backChunk->m_Blocks[PositionToIndex(x,y,Chunk::DEPTH-1)]!=(int_fast8_t)BlockType::Air);
 				neighbourIndex = PositionToIndex(x-1, y, z);
 				neighbours[(int)BlockSides::LEFT] = x>0 &&  m_Blocks[neighbourIndex] != (int_fast8_t)BlockType::Air;
-				neighbours[(int)BlockSides::LEFT] = neighbours[(int)BlockSides::LEFT] || (x==0 && leftChunk.m_Blocks[PositionToIndex(Chunk::WIDTH-1,y,z)]!=(int_fast8_t)BlockType::Air);
+				neighbours[(int)BlockSides::LEFT] = neighbours[(int)BlockSides::LEFT] || (leftChunk && x==0 && leftChunk->m_Blocks[PositionToIndex(Chunk::WIDTH-1,y,z)]!=(int_fast8_t)BlockType::Air);
 				neighbourIndex = PositionToIndex(x, y+1, z);
 				neighbours[(int)BlockSides::TOP] = y<Chunk::HEIGHT-1 &&  m_Blocks[neighbourIndex] != (int_fast8_t)BlockType::Air;
 				neighbourIndex = PositionToIndex(x, y-1, z);

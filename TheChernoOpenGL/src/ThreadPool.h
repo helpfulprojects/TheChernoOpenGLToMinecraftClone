@@ -21,11 +21,14 @@ public:
     // Enqueue task for execution by the thread pool
     void enqueue(std::function<void()> task);
     void EnqueueChunkLoading(const Chunk* currentChunk, const Chunk* leftChunk, const Chunk* rightChunk, const Chunk* frontChunk, const Chunk* backChunk);
+    void EnqueueChunkGeneration(glm::vec3 chunkOrigin);
     bool IsChunkBeingLoaded(const glm::vec3& chunkOrigin);
+    bool IsChunkBeingGenerated(const glm::vec3& chunkOrigin);
+    bool HasChunkGenerated(const glm::vec3& chunkOrigin);
     bool HasChunkLoaded(const glm::vec3& chunkOrigin);
     std::vector<Vertex> GetChunkVertices(const glm::vec3& chunkOrigin);
+    Chunk* GetGeneratedChunk(const glm::vec3& chunkOrigin);
 private:
-    void ChunkLoading(const Chunk* currentChunk, const Chunk* leftChunk, const Chunk* rightChunk, const Chunk* frontChunk, const Chunk* backChunk);
     // Vector to store worker threads
     std::vector<std::thread> threads_;
     // Queue of tasks
@@ -40,4 +43,7 @@ private:
     bool stop_ = false;
 	std::unordered_map<glm::vec3, std::vector<Vertex>> chunksVerticesForRenderer;
 	std::mutex chunksVerticesMtx;
+
+	std::unordered_map<glm::vec3, Chunk*> generatedChunks;
+	std::mutex generatedChunksMtx;
 };

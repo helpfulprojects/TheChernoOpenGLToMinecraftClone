@@ -42,7 +42,7 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 	if (direction == DOWN)
 		Position -= globalUp * velocity;
 	if (direction == SPEED_INCREASE)
-		SpeedIncrease = 2.0;
+		SpeedIncrease = 5.0;
 	else
 		SpeedIncrease = 1.0;
 }
