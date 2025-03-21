@@ -10,6 +10,7 @@ Renderer::~Renderer()
 
 void Renderer::Clear() const
 {
+	glClearColor(110.0f/255.0f, 177.0f/255.0f, 255.0f/255.0f, 1.0f);
 	GlCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
 
