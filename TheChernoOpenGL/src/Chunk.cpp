@@ -22,14 +22,20 @@ Chunk::Chunk(glm::vec3 position): m_Position(position)
 		for (unsigned int z = 0; z < Chunk::DEPTH; z++) {
 			for (unsigned int x = 0; x < Chunk::WIDTH; x++) {
 				unsigned int index = PositionToIndex(x, y, z);
-				if (y == Chunk::HEIGHT - 1) {
-					m_Blocks[index] = BlockType::Grass;
-				}
-				else {
-					m_Blocks[index] = BlockType::Dirt;
-				}
+				m_Blocks[index] = GetBlock(x, y, z);
 			}
 		}
+	}
+}
+
+BlockType Chunk::GetBlock(int x, int y, int z) const
+{
+	int surfaceY = 100;
+	if (y < surfaceY) {
+		return BlockType::Stone;
+	}
+	else {
+		return BlockType::Air;
 	}
 }
 
@@ -72,19 +78,6 @@ std::vector<Vertex> Chunk::GetChunkBlocksVertecies(const Chunk& leftChunk, const
 	return vertices;
 }
 
-void Chunk::Draw(const Renderer& renderer)
-{
-	//VertexArray va = VertexArray();
-	//va.Bind();
-	//VertexBuffer vb = VertexBuffer(&m_Vertices[0], m_Vertices.size());
-	//vb.Bind();
-	//va.AddBlockBuffer(vb);
-	//IndexBuffer ib = IndexBuffer(&m_Indices[0], m_Indices.size());
-	//ib.Bind();
-	//m_Vertices.clear();
-	//m_Indices.clear();
-	//renderer.Draw(va,ib);
-}
 
 std::vector<Vertex> Chunk::GenerateBlockVertices(const glm::vec3& position, const BlockType& type, const bool* neighbours)const
 {

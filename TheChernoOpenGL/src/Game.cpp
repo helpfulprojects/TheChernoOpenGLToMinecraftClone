@@ -16,7 +16,7 @@ Game::~Game()
 }
 void Game::Init()
 {
-	m_Camera = new Camera(glm::vec3(0.0f, 51.0f, 0.0f));
+	m_Camera = new Camera(glm::vec3(0.0f, 101.0f, 0.0f));
 	m_Renderer = new Renderer();
 	m_World = new World();
 	m_ThreadPool = new ThreadPool(4);
