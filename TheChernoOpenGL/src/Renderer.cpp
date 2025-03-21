@@ -2,8 +2,9 @@
 
 Renderer::~Renderer()
 {
-	for (auto chunk : m_LoadedChunks) {
-		UnloadChunk(chunk.first);
+	for (auto chunkItr = m_LoadedChunks.begin();chunkItr != m_LoadedChunks.end();) {
+		UnloadChunk(chunkItr->first);
+		chunkItr = m_LoadedChunks.erase(m_LoadedChunks.find(chunkItr->first));
 	}
 }
 
@@ -60,11 +61,10 @@ void Renderer::LoadChunk(glm::vec3 chunkOrigin, const std::vector<Vertex>& verti
 
 void Renderer::UnloadChunk(glm::vec3 chunkOrigin)
 {
-	if (m_LoadedChunks.find(chunkOrigin) == m_LoadedChunks.end()) {
+	if (m_LoadedChunks.find(chunkOrigin) != m_LoadedChunks.end()) {
 		for (RenderBatch* renderBatch : m_LoadedChunks[chunkOrigin]) {
 			delete renderBatch;
 		}
-		m_LoadedChunks.erase(m_LoadedChunks.find(chunkOrigin));
 	}
 }
 
@@ -85,6 +85,19 @@ void Renderer::GetVerticesFromThreadLoop(ThreadPool& threadPool)
 	for (const glm::vec3& chunkOrigin : m_CheckForChunkVertices) {
 		if (threadPool.HasChunkLoaded(chunkOrigin)) {
 			LoadChunk(chunkOrigin,threadPool.GetChunkVertices(chunkOrigin));
+		}
+	}
+}
+
+void Renderer::UnloadChunks(World& world)
+{
+	for (auto chunkItr = m_LoadedChunks.begin();chunkItr != m_LoadedChunks.end();) {
+		if (std::find(std::begin(world.m_ChunksToRender), std::end(world.m_ChunksToRender), chunkItr->first) == std::end(world.m_ChunksToRender)) {
+			UnloadChunk(chunkItr->first);
+			chunkItr = m_LoadedChunks.erase(m_LoadedChunks.find(chunkItr->first));
+		}
+		else {
+			chunkItr++;
 		}
 	}
 }

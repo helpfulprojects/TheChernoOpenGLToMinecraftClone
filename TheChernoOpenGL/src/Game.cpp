@@ -33,6 +33,7 @@ void Game::Update(float deltaTime)
 	m_World->UpdateChunksToRender(m_Camera->Position);
 	m_World->LoadChunksInRenderer(*m_Renderer, *m_ThreadPool);
 	m_Renderer->GetVerticesFromThreadLoop(*m_ThreadPool);
+	m_Renderer->UnloadChunks(*m_World);
 }
 void Game::Render()
 {
@@ -46,7 +47,6 @@ void Game::Render()
 }
 void Game::ProcessInput(float deltaTime)
 {
-
     if (m_Keys[GLFW_KEY_W])
         m_Camera->ProcessKeyboard(FORWARD, deltaTime);
     if (m_Keys[GLFW_KEY_S])

@@ -7,6 +7,7 @@
 #include <glm/gtx/hash.hpp>
 #include <vector>
 #include "ThreadPool.h"
+#include "World.h"
 
 class Renderer {
 public:
@@ -22,6 +23,7 @@ public:
 	bool IsChunkLoaded(glm::vec3 chunkOrigin)const;
 	void WaitForChunkVertices(glm::vec3 chunkOrigin);
 	void GetVerticesFromThreadLoop(ThreadPool& threadPool);
+	void UnloadChunks(World& world);
 private:
 	std::unordered_map<glm::vec3, std::vector<RenderBatch*>> m_LoadedChunks;
 	std::vector<glm::vec3> m_CheckForChunkVertices;
