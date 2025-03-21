@@ -9,7 +9,7 @@ public:
 	bool AddVertex(const Vertex& vertex);
 	void Draw();
 private:
-	const static int BATCH_SIZE = 1000;
+	const static int BATCH_SIZE = 4000;
 	std::vector<Vertex> m_Vertices;
 	unsigned int m_Va;
 	unsigned int m_Vb;

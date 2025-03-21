@@ -34,13 +34,19 @@ int_fast8_t Chunk::GetBlock(int x, int y, int z) const
 {
 	if(y>40)
 		return (int_fast8_t)BlockType::Air;
-	const double noise = perlin.normalizedOctave2D((float)x*.02f, (float)z*.02f,4)*20.0f;
+	const double noise = perlin.normalizedOctave2D((float)x*.027f, (float)z*.027f,4)*20.0f;
 	int surfaceY = 20+noise;
+	int waterY = 18;
 	if (y < surfaceY) {
 		return (int_fast8_t)BlockType::Grass;
 	}
 	else {
-		return (int_fast8_t)BlockType::Air;
+		if (y < waterY) {
+			return (int_fast8_t)BlockType::Water;
+		}
+		else {
+			return (int_fast8_t)BlockType::Air;
+		}
 	}
 }
 
@@ -140,6 +146,14 @@ std::vector<Vertex> Chunk::GenerateBlockVertices(const glm::vec3& position, int_
 		leftTexCoords = { Texture::AtlasBlockX(1),Texture::AtlasBlockY(0) };
 		topTexCoords = { Texture::AtlasBlockX(1),Texture::AtlasBlockY(0) };
 		bottomTexCoords = { Texture::AtlasBlockX(1),Texture::AtlasBlockY(0) };
+		break;
+	case (int_fast8_t)BlockType::Water:
+		frontTexCoords = { Texture::AtlasBlockX(13),Texture::AtlasBlockY(12) };
+		rightTexCoords = { Texture::AtlasBlockX(13),Texture::AtlasBlockY(12) };
+		backTexCoords = { Texture::AtlasBlockX(13),Texture::AtlasBlockY(12) };
+		leftTexCoords = { Texture::AtlasBlockX(13),Texture::AtlasBlockY(12) };
+		topTexCoords = { Texture::AtlasBlockX(13),Texture::AtlasBlockY(12) };
+		bottomTexCoords = { Texture::AtlasBlockX(13),Texture::AtlasBlockY(12) };
 		break;
 	default:
 		ASSERT(false);

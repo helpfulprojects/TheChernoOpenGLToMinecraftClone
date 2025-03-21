@@ -4,7 +4,8 @@ enum class BlockType {
 	Air = -1,
 	Dirt,
 	Grass,
-	Stone
+	Stone,
+	Water
 };
 struct Vertex {
 	glm::vec3 Position;
