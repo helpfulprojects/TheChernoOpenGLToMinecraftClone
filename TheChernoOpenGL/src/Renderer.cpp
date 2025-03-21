@@ -1,14 +1,9 @@
 #include "Renderer.h"
 
-Renderer::Renderer()
-{
-	m_Batches.push_back(new RenderBatch());
-}
-
 Renderer::~Renderer()
 {
-	for (RenderBatch* renderBatch : m_Batches) {
-		delete renderBatch;
+	for (auto chunk : m_LoadedChunks) {
+		UnloadChunk(chunk.first);
 	}
 }
 
@@ -31,23 +26,49 @@ void Renderer::Draw(const VertexArray& va) const
 
 void Renderer::Draw() const
 {
-	for (RenderBatch* renderBatch : m_Batches) {
-		renderBatch->Draw();
+	for (auto renderBatches : m_LoadedChunks) {
+		for (RenderBatch* renderBatch : renderBatches.second) {
+			renderBatch->Draw();
+		}
 	}
 }
 
-void Renderer::AddVertex(const Vertex& vertex)
+void Renderer::AddVertex(const Vertex& vertex, std::vector<RenderBatch*>& renderBatch)
 {
-	RenderBatch* lastRenderBatch = m_Batches.back();
+	if (renderBatch.size() <= 0)
+		renderBatch.push_back(new RenderBatch());
+	RenderBatch* lastRenderBatch = renderBatch.back();
 	if (!lastRenderBatch->AddVertex(vertex)) {
-		m_Batches.push_back(new RenderBatch());
-		AddVertex(vertex);
+		renderBatch.push_back(new RenderBatch());
+		AddVertex(vertex,renderBatch);
 	}
 }
 
-void Renderer::AddVertices(const std::vector<Vertex>& vertices)
+void Renderer::AddVertices(const std::vector<Vertex>& vertices, std::vector<RenderBatch*>& renderBatch)
 {
 	for (const Vertex& vertex : vertices) {
-		AddVertex(vertex);
+		AddVertex(vertex,renderBatch);
 	}
+}
+
+void Renderer::LoadChunk(glm::vec3 chunkOrigin, const std::vector<Vertex>& vertices)
+{
+	if (m_LoadedChunks.find(chunkOrigin) == m_LoadedChunks.end()) {
+		AddVertices(vertices, m_LoadedChunks[chunkOrigin]);
+	}
+}
+
+void Renderer::UnloadChunk(glm::vec3 chunkOrigin)
+{
+	if (m_LoadedChunks.find(chunkOrigin) == m_LoadedChunks.end()) {
+		for (RenderBatch* renderBatch : m_LoadedChunks[chunkOrigin]) {
+			delete renderBatch;
+		}
+		m_LoadedChunks.erase(m_LoadedChunks.find(chunkOrigin));
+	}
+}
+
+bool Renderer::IsChunkLoaded(glm::vec3 chunkOrigin) const
+{
+	return m_LoadedChunks.find(chunkOrigin) != m_LoadedChunks.end();
 }

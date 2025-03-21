@@ -39,7 +39,7 @@ Chunk::~Chunk()
 	delete[] m_Blocks;
 }
 
-std::vector<Vertex> Chunk::GetChunkBlocksVertecies(const Chunk& leftChunk, const Chunk& rightChunk, const Chunk& frontChunk, const Chunk& backChunk)
+std::vector<Vertex> Chunk::GetChunkBlocksVertecies(const Chunk& leftChunk, const Chunk& rightChunk, const Chunk& frontChunk, const Chunk& backChunk) const
 {
 	std::vector<Vertex> vertices;
 	size_t verticesOffset = 0;
@@ -86,7 +86,7 @@ void Chunk::Draw(const Renderer& renderer)
 	//renderer.Draw(va,ib);
 }
 
-std::vector<Vertex> Chunk::GenerateBlockVertices(const glm::vec3& position, const BlockType& type, const bool* neighbours)
+std::vector<Vertex> Chunk::GenerateBlockVertices(const glm::vec3& position, const BlockType& type, const bool* neighbours)const
 {
 	std::vector<Vertex> vertices;
 	glm::vec3 leftDownBack = { 0.0,0.0,0.0 };

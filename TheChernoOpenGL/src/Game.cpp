@@ -24,12 +24,12 @@ void Game::Init()
 	texture->Bind();
 	shader->Uniform1i("u_Texture", 0);
 	shader->Unbind();
-	m_World->UpdateChunksToRender(m_Camera->Position);
-	m_Renderer->AddVertices(m_World->GetWorldBlocksVertecies());
 }
 void Game::Update(float deltaTime)
 {
 	std::cout <<"FPS:" << 1 / deltaTime << std::endl;
+	m_World->UpdateChunksToRender(m_Camera->Position);
+	m_World->LoadChunksInRenderer(*m_Renderer);
 }
 void Game::Render()
 {

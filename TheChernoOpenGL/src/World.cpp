@@ -28,9 +28,8 @@ void World::UpdateChunksToRender(const glm::vec3& playerPosition)
 	}
 }
 
-std::vector<Vertex> World::GetWorldBlocksVertecies()
+void World::LoadChunksInRenderer(Renderer& renderer)
 {
-	std::vector<Vertex> vertices;
 	for (const glm::vec3& chunkPosition : m_ChunksToRender) {
 		GenerateChunkIfNotFound(chunkPosition+glm::vec3{0.0,0.0,0.0});
 		GenerateChunkIfNotFound(chunkPosition+glm::vec3{Chunk::WIDTH,0.0,0.0});
@@ -39,17 +38,16 @@ std::vector<Vertex> World::GetWorldBlocksVertecies()
 		GenerateChunkIfNotFound(chunkPosition+glm::vec3{0.0,0.0,-(int)Chunk::DEPTH});
 	}
 	for (const glm::vec3& chunkPosition : m_ChunksToRender) {
-		if (m_Chunks.find(chunkPosition) != m_Chunks.end()) {
+		if (m_Chunks.find(chunkPosition) != m_Chunks.end() && !renderer.IsChunkLoaded(chunkPosition)) {
 			std::vector<Vertex> chunkVertices = m_Chunks[chunkPosition]->GetChunkBlocksVertecies(
 				*m_Chunks[chunkPosition+glm::vec3{Chunk::WIDTH,0.0,0.0}],
 				*m_Chunks[chunkPosition+glm::vec3{-(int)Chunk::WIDTH,0.0,0.0}],
 				*m_Chunks[chunkPosition+glm::vec3{0.0,0.0,Chunk::DEPTH}],
 				*m_Chunks[chunkPosition+glm::vec3{0.0,0.0,-(int)Chunk::DEPTH}]
 				);
-				vertices.insert(vertices.begin(), chunkVertices.begin(), chunkVertices.end());
+			renderer.LoadChunk(chunkPosition, chunkVertices);
 		}
 	}
-	return vertices;
 }
 
 void World::GenerateChunkIfNotFound(const glm::vec3& chunkPosition)

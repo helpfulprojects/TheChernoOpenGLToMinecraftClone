@@ -8,7 +8,7 @@ class World {
 public:
 	~World();
 	void UpdateChunksToRender(const glm::vec3& playerPosition);
-	std::vector<Vertex> GetWorldBlocksVertecies();
+	void LoadChunksInRenderer(Renderer& renderer);
 	void Draw(const Renderer& renderer);
 private:
 	const static unsigned int RENDER_DISTANCE = 5;
