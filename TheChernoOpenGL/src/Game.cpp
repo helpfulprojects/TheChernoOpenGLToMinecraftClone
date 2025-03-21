@@ -12,12 +12,14 @@ Game::~Game()
 	delete m_World;
 	delete texture;
 	delete m_Camera;
+	delete m_ThreadPool;
 }
 void Game::Init()
 {
 	m_Camera = new Camera(glm::vec3(0.0f, 51.0f, 0.0f));
 	m_Renderer = new Renderer();
 	m_World = new World();
+	m_ThreadPool = new ThreadPool(4);
 	shader = new Shader("res/shaders/Basic.shader");
 	shader->Bind();
 	texture = new Texture("res/textures/atlas.png");
@@ -29,7 +31,8 @@ void Game::Update(float deltaTime)
 {
 	std::cout <<"FPS:" << 1 / deltaTime << std::endl;
 	m_World->UpdateChunksToRender(m_Camera->Position);
-	m_World->LoadChunksInRenderer(*m_Renderer);
+	m_World->LoadChunksInRenderer(*m_Renderer, *m_ThreadPool);
+	m_Renderer->GetVerticesFromThreadLoop(*m_ThreadPool);
 }
 void Game::Render()
 {

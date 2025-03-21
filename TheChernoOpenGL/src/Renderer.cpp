@@ -72,3 +72,19 @@ bool Renderer::IsChunkLoaded(glm::vec3 chunkOrigin) const
 {
 	return m_LoadedChunks.find(chunkOrigin) != m_LoadedChunks.end();
 }
+
+void Renderer::WaitForChunkVertices(glm::vec3 chunkOrigin)
+{
+	if (std::find(m_CheckForChunkVertices.begin(), m_CheckForChunkVertices.end(), chunkOrigin)==m_CheckForChunkVertices.end()) {
+		m_CheckForChunkVertices.push_back(chunkOrigin);
+	}
+}
+
+void Renderer::GetVerticesFromThreadLoop(ThreadPool& threadPool)
+{
+	for (const glm::vec3& chunkOrigin : m_CheckForChunkVertices) {
+		if (threadPool.HasChunkLoaded(chunkOrigin)) {
+			LoadChunk(chunkOrigin,threadPool.GetChunkVertices(chunkOrigin));
+		}
+	}
+}

@@ -4,11 +4,13 @@
 #include <unordered_map>
 #include "Chunk.h"
 #include <glm/gtx/hash.hpp>
+#include "ThreadPool.h"
+class Renderer;
 class World {
 public:
 	~World();
 	void UpdateChunksToRender(const glm::vec3& playerPosition);
-	void LoadChunksInRenderer(Renderer& renderer);
+	void LoadChunksInRenderer(Renderer& renderer, ThreadPool& threadPool);
 	void Draw(const Renderer& renderer);
 private:
 	const static unsigned int RENDER_DISTANCE = 5;

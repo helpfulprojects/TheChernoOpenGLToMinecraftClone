@@ -1,5 +1,6 @@
 #include "World.h"
 #include <cmath>
+#include "Renderer.h"
 
 World::~World()
 {
@@ -28,7 +29,7 @@ void World::UpdateChunksToRender(const glm::vec3& playerPosition)
 	}
 }
 
-void World::LoadChunksInRenderer(Renderer& renderer)
+void World::LoadChunksInRenderer(Renderer& renderer, ThreadPool& threadPool)
 {
 	for (const glm::vec3& chunkPosition : m_ChunksToRender) {
 		GenerateChunkIfNotFound(chunkPosition+glm::vec3{0.0,0.0,0.0});
@@ -38,14 +39,15 @@ void World::LoadChunksInRenderer(Renderer& renderer)
 		GenerateChunkIfNotFound(chunkPosition+glm::vec3{0.0,0.0,-(int)Chunk::DEPTH});
 	}
 	for (const glm::vec3& chunkPosition : m_ChunksToRender) {
-		if (m_Chunks.find(chunkPosition) != m_Chunks.end() && !renderer.IsChunkLoaded(chunkPosition)) {
-			std::vector<Vertex> chunkVertices = m_Chunks[chunkPosition]->GetChunkBlocksVertecies(
-				*m_Chunks[chunkPosition+glm::vec3{Chunk::WIDTH,0.0,0.0}],
-				*m_Chunks[chunkPosition+glm::vec3{-(int)Chunk::WIDTH,0.0,0.0}],
-				*m_Chunks[chunkPosition+glm::vec3{0.0,0.0,Chunk::DEPTH}],
-				*m_Chunks[chunkPosition+glm::vec3{0.0,0.0,-(int)Chunk::DEPTH}]
-				);
-			renderer.LoadChunk(chunkPosition, chunkVertices);
+		if (m_Chunks.find(chunkPosition) != m_Chunks.end() && !renderer.IsChunkLoaded(chunkPosition) && !threadPool.IsChunkBeingLoaded(chunkPosition)) {
+			threadPool.EnqueueChunkLoading(
+				m_Chunks[chunkPosition],
+				m_Chunks[chunkPosition + glm::vec3{ Chunk::WIDTH,0.0,0.0 }],
+				m_Chunks[chunkPosition + glm::vec3{ -(int)Chunk::WIDTH,0.0,0.0 }],
+				m_Chunks[chunkPosition + glm::vec3{ 0.0,0.0,Chunk::DEPTH }],
+				m_Chunks[chunkPosition + glm::vec3{ 0.0,0.0,-(int)Chunk::DEPTH }]
+			);
+			renderer.WaitForChunkVertices(chunkPosition);
 		}
 	}
 }

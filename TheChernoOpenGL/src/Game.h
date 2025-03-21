@@ -7,6 +7,7 @@
 #include "VertexBuffer.h"
 #include "Camera.h"
 #include "World.h"
+#include "ThreadPool.h"
 class Game
 {
 public:
@@ -23,6 +24,7 @@ private:
 	unsigned int vao;
 	Shader* shader;
 	World* m_World;
+	ThreadPool* m_ThreadPool;
 	Texture* texture;
 	Camera* m_Camera;
 	glm::vec3 translate;

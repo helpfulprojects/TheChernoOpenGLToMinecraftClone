@@ -2,13 +2,14 @@
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include <array>
-#include "Renderer.h"
+class Renderer;
 class Chunk {
 public:
 	Chunk();
 	Chunk(glm::vec3 position);
 	~Chunk();
 	std::vector<Vertex> GetChunkBlocksVertecies(const Chunk& leftChunk,const Chunk& rightChunk,const Chunk& frontChunk,const Chunk& backChunk) const;
+	inline glm::vec3 GetPosition() const { return m_Position; }
 	void Draw(const Renderer& renderer);
 	const static int HEIGHT = 50;
 	const static int WIDTH = 16;
