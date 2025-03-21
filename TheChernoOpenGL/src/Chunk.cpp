@@ -2,6 +2,7 @@
 #include "Texture.h"
 #include <iostream>
 #include "ErrorManager.h"
+#include <chrono>
 enum class BlockSides {
 	FRONT=0,
 	RIGHT,
@@ -16,37 +17,41 @@ Chunk::Chunk(): Chunk(glm::vec3{0.0,0.0,0.0})
 
 Chunk::Chunk(glm::vec3 position): m_Position(position)
 {
-	std::cout << "Created Chunk: " << position.x << "," << position.y << "," << position.z << std::endl;
-	m_Blocks = new BlockType[WIDTH * DEPTH * HEIGHT];
+	auto start = std::chrono::high_resolution_clock::now();
 	for (unsigned int y = 0; y < Chunk::HEIGHT; y++) {
 		for (unsigned int z = 0; z < Chunk::DEPTH; z++) {
 			for (unsigned int x = 0; x < Chunk::WIDTH; x++) {
 				unsigned int index = PositionToIndex(x, y, z);
-				m_Blocks[index] = GetBlock(x, y, z);
+				m_Blocks[index] = GetBlock(position.x+x, position.y+y, position.z+z);
 			}
 		}
 	}
+	auto endChunk = std::chrono::high_resolution_clock::now();
+	//std::cout << "CREATE CHUNK: " << std::chrono::duration_cast<std::chrono::milliseconds>(endChunk - start).count() << " miliseconds" << std::endl;
 }
 
-BlockType Chunk::GetBlock(int x, int y, int z) const
+int_fast8_t Chunk::GetBlock(int x, int y, int z) const
 {
-	int surfaceY = 100;
+	if(y>40)
+		return (int_fast8_t)BlockType::Air;
+	const double noise = perlin.normalizedOctave2D((float)x*.02f, (float)z*.02f,1)*20.0f;
+	int surfaceY = 20+noise;
 	if (y < surfaceY) {
-		return BlockType::Stone;
+		return (int_fast8_t)BlockType::Grass;
 	}
 	else {
-		return BlockType::Air;
+		return (int_fast8_t)BlockType::Air;
 	}
 }
 
 Chunk::~Chunk()
 {
-	std::cout << "Deleted Chunk: " << m_Position.x << "," << m_Position.y << "," << m_Position.z << std::endl;
-	delete[] m_Blocks;
+	//std::cout << "Deleted Chunk: " << m_Position.x << "," << m_Position.y << "," << m_Position.z << std::endl;
 }
 
-std::vector<Vertex> Chunk::GetChunkBlocksVertecies(const Chunk& leftChunk, const Chunk& rightChunk, const Chunk& frontChunk, const Chunk& backChunk) const
+std::vector<Vertex> Chunk::GetChunkBlocksVertecies(const Chunk& rightChunk, const Chunk& leftChunk, const Chunk& frontChunk, const Chunk& backChunk) const
 {
+	auto start = std::chrono::high_resolution_clock::now();
 	std::vector<Vertex> vertices;
 	size_t verticesOffset = 0;
 	size_t indicesOffset = 0;
@@ -54,32 +59,45 @@ std::vector<Vertex> Chunk::GetChunkBlocksVertecies(const Chunk& leftChunk, const
 		for (unsigned int z = 0; z < Chunk::DEPTH; z++) {
 			for (unsigned int x = 0; x < Chunk::WIDTH; x++) {
 				unsigned int index = PositionToIndex(x, y, z);
-				if (m_Blocks[index] == BlockType::Air) continue;
+				if (m_Blocks[index] == (int_fast8_t)BlockType::Air) continue;
 				bool neighbours[6] = { false };
 				int neighbourIndex = 0;
 				neighbourIndex = PositionToIndex(x, y, z+1);
-				neighbours[(int)BlockSides::FRONT] = z<Chunk::DEPTH-1 && m_Blocks[neighbourIndex] != BlockType::Air;
+				neighbours[(int)BlockSides::FRONT] = z<Chunk::DEPTH-1 && m_Blocks[neighbourIndex] != (int_fast8_t)BlockType::Air;
+				neighbours[(int)BlockSides::FRONT] = neighbours[(int)BlockSides::FRONT] || (z==Chunk::DEPTH-1 && frontChunk.m_Blocks[PositionToIndex(x,y,0)]!=(int_fast8_t)BlockType::Air);
 				neighbourIndex = PositionToIndex(x+1, y, z);
-				neighbours[(int)BlockSides::RIGHT] = x<Chunk::WIDTH-1 &&  m_Blocks[neighbourIndex] != BlockType::Air;
+				neighbours[(int)BlockSides::RIGHT] = x<Chunk::WIDTH-1 &&  m_Blocks[neighbourIndex] != (int_fast8_t)BlockType::Air;
+				neighbours[(int)BlockSides::RIGHT] = neighbours[(int)BlockSides::RIGHT] || (x==Chunk::WIDTH-1 && rightChunk.m_Blocks[PositionToIndex(0,y,z)]!=(int_fast8_t)BlockType::Air);
 				neighbourIndex = PositionToIndex(x, y, z-1);
-				neighbours[(int)BlockSides::BACK] = z>0 &&  m_Blocks[neighbourIndex] != BlockType::Air;
+				neighbours[(int)BlockSides::BACK] = z>0 &&  m_Blocks[neighbourIndex] != (int_fast8_t)BlockType::Air;
+				neighbours[(int)BlockSides::BACK] = neighbours[(int)BlockSides::BACK] || (z==0 && backChunk.m_Blocks[PositionToIndex(x,y,Chunk::DEPTH-1)]!=(int_fast8_t)BlockType::Air);
 				neighbourIndex = PositionToIndex(x-1, y, z);
-				neighbours[(int)BlockSides::LEFT] = x>0 &&  m_Blocks[neighbourIndex] != BlockType::Air;
+				neighbours[(int)BlockSides::LEFT] = x>0 &&  m_Blocks[neighbourIndex] != (int_fast8_t)BlockType::Air;
+				neighbours[(int)BlockSides::LEFT] = neighbours[(int)BlockSides::LEFT] || (x==0 && leftChunk.m_Blocks[PositionToIndex(Chunk::WIDTH-1,y,z)]!=(int_fast8_t)BlockType::Air);
 				neighbourIndex = PositionToIndex(x, y+1, z);
-				neighbours[(int)BlockSides::TOP] = y<Chunk::HEIGHT-1 &&  m_Blocks[neighbourIndex] != BlockType::Air;
+				neighbours[(int)BlockSides::TOP] = y<Chunk::HEIGHT-1 &&  m_Blocks[neighbourIndex] != (int_fast8_t)BlockType::Air;
 				neighbourIndex = PositionToIndex(x, y-1, z);
-				neighbours[(int)BlockSides::BOTTOM] = y>0 &&  m_Blocks[neighbourIndex] != BlockType::Air;
+				neighbours[(int)BlockSides::BOTTOM] = y>0 &&  m_Blocks[neighbourIndex] != (int_fast8_t)BlockType::Air;
 				glm::vec3 position = glm::vec3{x,y,z}+m_Position;
+
+				auto start = std::chrono::high_resolution_clock::now();
+				int sum = std::accumulate(neighbours, neighbours + 6, 0);
+				if (sum == 6)
+					continue;
 				std::vector<Vertex> blockVertices = GenerateBlockVertices(position, m_Blocks[index], neighbours);
+				auto end = std::chrono::high_resolution_clock::now();
+				//std::cout << "GENERATE BLOCK: " << std::chrono::duration_cast<std::chrono::microseconds>(end- start).count() << " microseconds" << std::endl;
 				vertices.insert(vertices.begin(), blockVertices.begin(), blockVertices.end());
 			}
 		}
 	}
+	auto endChunk = std::chrono::high_resolution_clock::now();
+	//std::cout << "GENERATE CHUNK: " << std::chrono::duration_cast<std::chrono::milliseconds>(endChunk - start).count() << " miliseconds" << std::endl;
 	return vertices;
 }
 
 
-std::vector<Vertex> Chunk::GenerateBlockVertices(const glm::vec3& position, const BlockType& type, const bool* neighbours)const
+std::vector<Vertex> Chunk::GenerateBlockVertices(const glm::vec3& position, int_fast8_t type, const bool* neighbours)const
 {
 	std::vector<Vertex> vertices;
 	glm::vec3 leftDownBack = { 0.0,0.0,0.0 };
@@ -99,7 +117,7 @@ std::vector<Vertex> Chunk::GenerateBlockVertices(const glm::vec3& position, cons
 	glm::vec2 topTexCoords;
 	glm::vec2 bottomTexCoords;
 	switch (type) {
-	case BlockType::Dirt:
+	case (int_fast8_t)BlockType::Dirt:
 		frontTexCoords = { Texture::AtlasBlockX(2),Texture::AtlasBlockY(0) };
 		rightTexCoords = { Texture::AtlasBlockX(2),Texture::AtlasBlockY(0) };
 		backTexCoords = { Texture::AtlasBlockX(2),Texture::AtlasBlockY(0) };
@@ -107,7 +125,7 @@ std::vector<Vertex> Chunk::GenerateBlockVertices(const glm::vec3& position, cons
 		topTexCoords = { Texture::AtlasBlockX(2),Texture::AtlasBlockY(0) };
 		bottomTexCoords = { Texture::AtlasBlockX(2),Texture::AtlasBlockY(0) };
 		break;
-	case BlockType::Grass:
+	case (int_fast8_t)BlockType::Grass:
 		frontTexCoords = { Texture::AtlasBlockX(3),Texture::AtlasBlockY(0) };
 		rightTexCoords = { Texture::AtlasBlockX(3),Texture::AtlasBlockY(0) };
 		backTexCoords = { Texture::AtlasBlockX(3),Texture::AtlasBlockY(0) };
@@ -115,7 +133,7 @@ std::vector<Vertex> Chunk::GenerateBlockVertices(const glm::vec3& position, cons
 		topTexCoords = { Texture::AtlasBlockX(0),Texture::AtlasBlockY(0) };
 		bottomTexCoords = { Texture::AtlasBlockX(2),Texture::AtlasBlockY(0) };
 		break;
-	case BlockType::Stone:
+	case (int_fast8_t)BlockType::Stone:
 		frontTexCoords = { Texture::AtlasBlockX(1),Texture::AtlasBlockY(0) };
 		rightTexCoords = { Texture::AtlasBlockX(1),Texture::AtlasBlockY(0) };
 		backTexCoords = { Texture::AtlasBlockX(1),Texture::AtlasBlockY(0) };

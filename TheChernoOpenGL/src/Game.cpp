@@ -16,10 +16,10 @@ Game::~Game()
 }
 void Game::Init()
 {
-	m_Camera = new Camera(glm::vec3(0.0f, 101.0f, 0.0f));
+	m_Camera = new Camera(glm::vec3(0.0f, 20.0f, 0.0f));
 	m_Renderer = new Renderer();
 	m_World = new World();
-	m_ThreadPool = new ThreadPool(4);
+	m_ThreadPool = new ThreadPool(6);
 	shader = new Shader("res/shaders/Basic.shader");
 	shader->Bind();
 	texture = new Texture("res/textures/atlas.png");
@@ -38,7 +38,7 @@ void Game::Update(float deltaTime)
 void Game::Render()
 {
 	shader->Bind();
-	glm::mat4 proj = glm::perspective(glm::radians(m_Camera->Zoom), (float)m_SCR_WIDTH / (float)m_SCR_HEIGHT, 0.1f, 500.0f);
+	glm::mat4 proj = glm::perspective(glm::radians(m_Camera->Zoom), (float)m_SCR_WIDTH / (float)m_SCR_HEIGHT, 0.1f, 1500.0f);
 	glm::mat4 view = m_Camera->GetViewMatrix();
 	glm::mat4 model = glm::mat4(1.0f); 
 	glm::mat4 mvp = proj * view * model;

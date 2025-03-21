@@ -28,7 +28,7 @@ glm::mat4 Camera::GetViewMatrix()
 void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 {
 	glm::vec3 globalUp = { 0.0,1.0,0.0 };
-	float velocity = MovementSpeed* SpeedIncrease * deltaTime;
+	float velocity = (MovementSpeed* SpeedIncrease) * deltaTime;
 	if (direction == FORWARD)
 		Position += Front * velocity;
 	if (direction == BACKWARD)
@@ -42,7 +42,7 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 	if (direction == DOWN)
 		Position -= globalUp * velocity;
 	if (direction == SPEED_INCREASE)
-		SpeedIncrease = 10.0;
+		SpeedIncrease = 2.0;
 	else
 		SpeedIncrease = 1.0;
 }
