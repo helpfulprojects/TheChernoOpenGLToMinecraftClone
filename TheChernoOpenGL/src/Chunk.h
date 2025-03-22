@@ -16,7 +16,7 @@ public:
 	const static int HEIGHT = 256;
 	const static int WIDTH = 16;
 	const static int DEPTH = 16;
-	const static siv::PerlinNoise::seed_type SEED = 123456u;
+	const static siv::PerlinNoise::seed_type SEED = 323456u;
 	static double GetContinentalness(float x, float z);
 	const static siv::PerlinNoise perlin;
 	const static float m_Continentalness;

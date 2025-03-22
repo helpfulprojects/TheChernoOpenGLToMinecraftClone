@@ -53,24 +53,38 @@ bool Chunk::IsNeighbourDifferentAndSolid(int_fast8_t currentBlockType, int_fast8
 	//	)
 	//	;
 }
-
+static int MapValues(double x, double x1, double x2, double y1, double y2, double defaultValue) {
+	if (x >= x1 && x < x2)
+		return y1 + ((x - x1) * (y2 - y1)) / (x2 - x1);
+	else
+		return defaultValue;
+}
 int_fast8_t Chunk::GetBlock(int x, int y, int z) const
 {
 	int surfaceY = 100;
 	if(y>surfaceY+50)
 		return (int_fast8_t)BlockType::Air;
 	double continentalness = GetContinentalness(x,z);
-	if (continentalness <= 0.3) {
-		surfaceY = 50 + (continentalness + 1) * (50 / 1.3);
-	}
-	else if (continentalness <= 0.4) {
-		surfaceY = 100 + (continentalness - .3) * (50 / 0.1);
-	}
-	else {
-		surfaceY = 150;
+	float xStops[] = {
+		-1.0f,
+		-0.35f,
+		-0.30f,
+		0.20f,
+		1.0f
+	};
+	float yStops[] = {
+		50,
+		70,
+		85,
+		90,
+		150
+	};
+	unsigned int stopsCount = sizeof(xStops) / sizeof(float);
+	for (int i = 0; i < stopsCount; i++) {
+		surfaceY = MapValues(continentalness, xStops[i], xStops[i+1], yStops[i], yStops[i+1],surfaceY);
 	}
 
-	int waterY = 90;
+	int waterY = 85;
 	if (y <= surfaceY) {
 		if(y==surfaceY) return (int_fast8_t)BlockType::Grass;
 		return (int_fast8_t)BlockType::Dirt;
