@@ -30,10 +30,10 @@ void Game::Init()
 }
 void Game::Update(float deltaTime)
 {
-	std::cout <<"FPS:" << 1 / deltaTime << std::endl;
 	{
-		ImGui::Begin("Debug info",(bool*)0,ImGuiWindowFlags_NoTitleBar);                          // Create a window called "Hello, world!" and append into it.
+		ImGui::Begin("Debug info",(bool*)0,ImGuiWindowFlags_NoTitleBar);  
 		ImGui::Text("Framerate: %.1f", io->Framerate);
+		ImGui::Text("Continentalness: %.3f", Chunk::GetContinentalness(m_Camera->Position.x,m_Camera->Position.z));
 		ImGui::End();
 	}
 	m_World->UpdateChunksToRender(m_Camera->Position);

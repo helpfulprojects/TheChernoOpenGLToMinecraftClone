@@ -3,6 +3,9 @@
 #include <iostream>
 #include "ErrorManager.h"
 #include <chrono>
+
+const float Chunk::m_Continentalness = 0.005f;
+const siv::PerlinNoise Chunk::perlin{ Chunk::SEED };
 enum class BlockSides {
 	FRONT=0,
 	RIGHT,
@@ -30,6 +33,12 @@ Chunk::Chunk(glm::vec3 position): m_Position(position)
 	//std::cout << "CREATE CHUNK: " << std::chrono::duration_cast<std::chrono::milliseconds>(endChunk - start).count() << " miliseconds" << std::endl;
 }
 
+double Chunk::GetContinentalness(float x, float z)
+{
+	//return perlin.normalizedOctave2D(x*m_Continentalness, z*m_Continentalness,4);
+	return perlin.octave2D_11(x*m_Continentalness, z*m_Continentalness,4);
+}
+
 bool Chunk::IsNeighbourDifferentAndSolid(int_fast8_t currentBlockType, int_fast8_t neighbourType)
 {
 	if (
@@ -48,13 +57,22 @@ bool Chunk::IsNeighbourDifferentAndSolid(int_fast8_t currentBlockType, int_fast8
 int_fast8_t Chunk::GetBlock(int x, int y, int z) const
 {
 	int surfaceY = 100;
-	if(y>surfaceY+20)
+	if(y>surfaceY+50)
 		return (int_fast8_t)BlockType::Air;
-	const double noise = perlin.normalizedOctave2D((float)x*.011f, (float)z*.011f,4)*20.0f;
-	int surfaceNoiseY = surfaceY+noise;
-	int waterY = surfaceY;
-	if (y <= surfaceNoiseY) {
-		if(y==surfaceNoiseY) return (int_fast8_t)BlockType::Grass;
+	double continentalness = GetContinentalness(x,z);
+	if (continentalness <= 0.3) {
+		surfaceY = 50 + (continentalness + 1) * (50 / 1.3);
+	}
+	else if (continentalness <= 0.4) {
+		surfaceY = 100 + (continentalness - .3) * (50 / 0.1);
+	}
+	else {
+		surfaceY = 150;
+	}
+
+	int waterY = 90;
+	if (y <= surfaceY) {
+		if(y==surfaceY) return (int_fast8_t)BlockType::Grass;
 		return (int_fast8_t)BlockType::Dirt;
 	}
 	else {
@@ -182,34 +200,36 @@ std::vector<Vertex> Chunk::GenerateBlockVertices(const glm::vec3& position, int_
 	glm::vec2 rightUp = { Texture::m_Offset,Texture::m_Offset };
 	glm::vec2 leftUp = { 0.0,Texture::m_Offset };
 	glm::vec2 leftDown = { 0.0,0.0 };
+	glm::vec3 frontBackColor = glm::vec3{0.80,0.80,0.80};
+	glm::vec3 leftRightColor = glm::vec3{0.60,0.60,0.60};
 	//FRONT
 	if(!neighbours[(int)BlockSides::FRONT]){
 		//m_Indices.insert(m_Indices.end(), { verticesOffset,verticesOffset + 1,verticesOffset + 2,verticesOffset,verticesOffset + 2,verticesOffset + 3 });
-		vertices.push_back({ position + rightDownFront,frontTexCoords + rightDown });
-		vertices.push_back({ position + leftDownFront,	frontTexCoords + leftDown });
-		vertices.push_back({ position + leftUpFront,	frontTexCoords + leftUp });
-		vertices.push_back({ position + rightUpFront,	frontTexCoords + rightUp });
+		vertices.push_back({ position + rightDownFront,frontTexCoords + rightDown,frontBackColor });
+		vertices.push_back({ position + leftDownFront,	frontTexCoords + leftDown,frontBackColor });
+		vertices.push_back({ position + leftUpFront,	frontTexCoords + leftUp,frontBackColor });
+		vertices.push_back({ position + rightUpFront,	frontTexCoords + rightUp,frontBackColor });
 	}
 	//RIGHT
 	if (!neighbours[(int)BlockSides::RIGHT]) {
-		vertices.push_back({ position + rightDownBack,	rightTexCoords + rightDown });
-		vertices.push_back({ position + rightDownFront,rightTexCoords + leftDown });
-		vertices.push_back({ position + rightUpFront,	rightTexCoords + leftUp });
-		vertices.push_back({ position + rightUpBack,	rightTexCoords + rightUp });
+		vertices.push_back({ position + rightDownBack,	rightTexCoords + rightDown,leftRightColor });
+		vertices.push_back({ position + rightDownFront,rightTexCoords + leftDown,leftRightColor });
+		vertices.push_back({ position + rightUpFront,	rightTexCoords + leftUp,leftRightColor });
+		vertices.push_back({ position + rightUpBack,	rightTexCoords + rightUp,leftRightColor });
 	}
 	//BACK
 	if(!neighbours[(int)BlockSides::BACK]){
-		vertices.push_back({ position + leftDownBack,	backTexCoords + rightDown });
-		vertices.push_back({ position + rightDownBack,backTexCoords + leftDown });
-		vertices.push_back({ position + rightUpBack,	backTexCoords + leftUp });
-		vertices.push_back({ position + leftUpBack,	backTexCoords + rightUp });
+		vertices.push_back({ position + leftDownBack,	backTexCoords + rightDown,frontBackColor });
+		vertices.push_back({ position + rightDownBack,backTexCoords + leftDown,frontBackColor });
+		vertices.push_back({ position + rightUpBack,	backTexCoords + leftUp,frontBackColor });
+		vertices.push_back({ position + leftUpBack,	backTexCoords + rightUp,frontBackColor });
 	}
 	//LEFT
 	if(!neighbours[(int)BlockSides::LEFT]){
-		vertices.push_back({ position + leftDownFront,leftTexCoords + rightDown });
-		vertices.push_back({ position + leftDownBack,	leftTexCoords + leftDown });
-		vertices.push_back({ position + leftUpBack,	leftTexCoords + leftUp });
-		vertices.push_back({ position + leftUpFront,	leftTexCoords + rightUp });
+		vertices.push_back({ position + leftDownFront,leftTexCoords + rightDown,leftRightColor });
+		vertices.push_back({ position + leftDownBack,	leftTexCoords + leftDown,leftRightColor });
+		vertices.push_back({ position + leftUpBack,	leftTexCoords + leftUp,leftRightColor });
+		vertices.push_back({ position + leftUpFront,	leftTexCoords + rightUp,leftRightColor });
 	}
 	//TOP
 	if(!neighbours[(int)BlockSides::TOP]){

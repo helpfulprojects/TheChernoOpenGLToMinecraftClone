@@ -10,8 +10,10 @@ RenderBatch::RenderBatch(): m_Va(0), m_Vb(0)
 	glBufferData(GL_ARRAY_BUFFER, BATCH_SIZE*sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 	GlCall(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)(offsetof(Vertex,Position))));
 	GlCall(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)(offsetof(Vertex,TexCoords))));
+	GlCall(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)(offsetof(Vertex,Color))));
 	GlCall(glEnableVertexAttribArray(0));
 	GlCall(glEnableVertexAttribArray(1));
+	GlCall(glEnableVertexAttribArray(2));
 
 	unsigned int EBO;
 	GlCall(glGenBuffers(1, &EBO));

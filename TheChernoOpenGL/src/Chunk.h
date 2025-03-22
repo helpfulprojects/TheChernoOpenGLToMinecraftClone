@@ -17,7 +17,9 @@ public:
 	const static int WIDTH = 16;
 	const static int DEPTH = 16;
 	const static siv::PerlinNoise::seed_type SEED = 123456u;
-	const siv::PerlinNoise perlin{ SEED };
+	static double GetContinentalness(float x, float z);
+	const static siv::PerlinNoise perlin;
+	const static float m_Continentalness;
 private:
 	static bool IsNeighbourDifferentAndSolid(int_fast8_t currentBlockType,int_fast8_t neighbourType);
 	glm::vec3 m_Position;
