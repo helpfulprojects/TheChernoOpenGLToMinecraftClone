@@ -9,6 +9,7 @@
 #include <glm/gtx/hash.hpp>
 #include "Block.h"
 #include "Chunk.h"
+#include "ChunkPositionHash.h"
 // Class that represents a simple thread pool
 class ThreadPool {
 public:
@@ -21,14 +22,14 @@ public:
     // Enqueue task for execution by the thread pool
     void enqueue(std::function<void()> task);
     void EnqueueChunkLoading(const Chunk* currentChunk, const Chunk* leftChunk, const Chunk* rightChunk, const Chunk* frontChunk, const Chunk* backChunk);
-    void EnqueueChunkGeneration(glm::vec3 chunkOrigin);
-    bool IsChunkBeingLoaded(const glm::vec3& chunkOrigin);
-    bool IsChunkBeingGenerated(const glm::vec3& chunkOrigin);
-    bool HasChunkGenerated(const glm::vec3& chunkOrigin);
-    bool HasChunkLoaded(const glm::vec3& chunkOrigin);
-    std::vector<Vertex> GetChunkTerrainVertices(const glm::vec3& chunkOrigin);
-    std::vector<Vertex> GetChunkWaterVertices(const glm::vec3& chunkOrigin);
-    Chunk* GetGeneratedChunk(const glm::vec3& chunkOrigin);
+    void EnqueueChunkGeneration(const ChunkPosition& chunkOrigin);
+    bool IsChunkBeingLoaded(const ChunkPosition& chunkOrigin);
+    bool IsChunkBeingGenerated(const ChunkPosition& chunkOrigin);
+    bool HasChunkGenerated(const ChunkPosition& chunkOrigin);
+    bool HasChunkLoaded(const ChunkPosition& chunkOrigin);
+    std::vector<Vertex> GetChunkTerrainVertices(const ChunkPosition& chunkOrigin);
+    std::vector<Vertex> GetChunkWaterVertices(const ChunkPosition& chunkOrigin);
+    Chunk* GetGeneratedChunk(const ChunkPosition& chunkOrigin);
 private:
     // Vector to store worker threads
     std::vector<std::thread> threads_;
@@ -42,12 +43,12 @@ private:
     // Flag to indicate whether the thread pool should stop
     // or not
     bool stop_ = false;
-	std::unordered_map<glm::vec3, std::vector<Vertex>> terrainVerticesForRenderer;
+	std::unordered_map<ChunkPosition, std::vector<Vertex>,ChunkPositionHash> terrainVerticesForRenderer;
 	std::mutex terrainVerticesMtx;
 
-	std::unordered_map<glm::vec3, std::vector<Vertex>> waterVerticesForRenderer;
+	std::unordered_map<ChunkPosition, std::vector<Vertex>,ChunkPositionHash> waterVerticesForRenderer;
 	std::mutex waterVerticesMtx;
 
-	std::unordered_map<glm::vec3, Chunk*> generatedChunks;
+	std::unordered_map<ChunkPosition, Chunk*, ChunkPositionHash> generatedChunks;
 	std::mutex generatedChunksMtx;
 };

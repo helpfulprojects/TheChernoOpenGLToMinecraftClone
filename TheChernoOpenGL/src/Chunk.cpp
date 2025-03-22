@@ -14,24 +14,24 @@ enum class BlockSides {
 	TOP,
 	BOTTOM
 };
-Chunk::Chunk(): Chunk(glm::vec3{0.0,0.0,0.0})
+Chunk::Chunk() : Chunk(ChunkPosition(0.0, 0.0, 0.0))
 {
-}
+};
 
-Chunk::Chunk(glm::vec3 position): m_Position(position)
+Chunk::Chunk(const ChunkPosition& position) : m_Position(position)
 {
 	auto start = std::chrono::high_resolution_clock::now();
 	for (unsigned int y = 0; y < Chunk::HEIGHT; y++) {
 		for (unsigned int z = 0; z < Chunk::DEPTH; z++) {
 			for (unsigned int x = 0; x < Chunk::WIDTH; x++) {
 				unsigned int index = PositionToIndex(x, y, z);
-				m_Blocks[index] = GetBlock(position.x+x, position.y+y, position.z+z);
+				m_Blocks[index] = GetBlock(position.x + x, position.y + y, position.z + z);
 			}
 		}
 	}
 	auto endChunk = std::chrono::high_resolution_clock::now();
 	//std::cout << "CREATE CHUNK: " << std::chrono::duration_cast<std::chrono::milliseconds>(endChunk - start).count() << " miliseconds" << std::endl;
-}
+};
 
 double Chunk::GetContinentalness(float x, float z)
 {
@@ -47,11 +47,6 @@ bool Chunk::IsNeighbourDifferentAndSolid(int_fast8_t currentBlockType, int_fast8
 		) return false;
 
 	return neighbourType != (int_fast8_t)BlockType::Air;
-	//return currentBlockType == neighbourType || (
-	//		neighbourType != (int_fast8_t) BlockType::Air &&
-	//		neighbourType != (int_fast8_t) BlockType::Water
-	//	)
-	//	;
 }
 static int MapValues(double x, double x1, double x2, double y1, double y2, double defaultValue) {
 	if (x >= x1 && x < x2)
@@ -99,6 +94,7 @@ int_fast8_t Chunk::GetBlock(int x, int y, int z) const
 	}
 }
 
+
 Chunk::~Chunk()
 {
 	//std::cout << "Deleted Chunk: " << m_Position.x << "," << m_Position.y << "," << m_Position.z << std::endl;
@@ -109,9 +105,9 @@ void Chunk::GetChunkBlocksVertecies(std::vector<Vertex>& terrainVertices, std::v
 	auto start = std::chrono::high_resolution_clock::now();
 	size_t verticesOffset = 0;
 	size_t indicesOffset = 0;
-	for (unsigned int y = 0; y < Chunk::HEIGHT; y++) {
-		for (unsigned int z = 0; z < Chunk::DEPTH; z++) {
-			for (unsigned int x = 0; x < Chunk::WIDTH; x++) {
+	for (int y = 0; y < Chunk::HEIGHT; y++) {
+		for (int z = 0; z < Chunk::DEPTH; z++) {
+			for (int x = 0; x < Chunk::WIDTH; x++) {
 				unsigned int index = PositionToIndex(x, y, z);
 				if (m_Blocks[index] == (int_fast8_t)BlockType::Air) continue;
 				bool neighbours[6] = { false };
@@ -132,7 +128,7 @@ void Chunk::GetChunkBlocksVertecies(std::vector<Vertex>& terrainVertices, std::v
 				neighbours[(int)BlockSides::TOP] = y<Chunk::HEIGHT-1 && IsNeighbourDifferentAndSolid(m_Blocks[index],m_Blocks[neighbourIndex]);
 				neighbourIndex = PositionToIndex(x, y-1, z);
 				neighbours[(int)BlockSides::BOTTOM] = y>0 && IsNeighbourDifferentAndSolid(m_Blocks[index],m_Blocks[neighbourIndex]);
-				glm::vec3 position = glm::vec3{x,y,z}+m_Position;
+				Vec3 position = { (float)x + m_Position.x,(float)y + m_Position.y,(float)z + m_Position.z };
 
 				auto start = std::chrono::high_resolution_clock::now();
 				int sum = std::accumulate(neighbours, neighbours + 6, 0);
@@ -155,25 +151,25 @@ void Chunk::GetChunkBlocksVertecies(std::vector<Vertex>& terrainVertices, std::v
 }
 
 
-std::vector<Vertex> Chunk::GenerateBlockVertices(const glm::vec3& position, int_fast8_t type, const bool* neighbours)const
+std::vector<Vertex> Chunk::GenerateBlockVertices(const Vec3& position, int_fast8_t type, const bool* neighbours) const
 {
 	std::vector<Vertex> vertices;
-	glm::vec3 leftDownBack = { 0.0,0.0,0.0 };
-	glm::vec3 rightDownBack = { 1.0,0.0,0.0 };
-	glm::vec3 rightUpBack = { 1.0,1.0,0.0 };
-	glm::vec3 leftUpBack = { 0.0,1.0,0.0 };
+	Vec3 leftDownBack = { 0.0,0.0,0.0 };
+	Vec3 rightDownBack = { 1.0,0.0,0.0 };
+	Vec3 rightUpBack = { 1.0,1.0,0.0 };
+	Vec3 leftUpBack = { 0.0,1.0,0.0 };
 
-	glm::vec3 leftDownFront = { 0.0,0.0,1.0 };
-	glm::vec3 rightDownFront = { 1.0,0.0,1.0 };
-	glm::vec3 rightUpFront = { 1.0,1.0,1.0 };
-	glm::vec3 leftUpFront = { 0.0,1.0,1.0 };
+	Vec3 leftDownFront = { 0.0,0.0,1.0 };
+	Vec3 rightDownFront = { 1.0,0.0,1.0 };
+	Vec3 rightUpFront = { 1.0,1.0,1.0 };
+	Vec3 leftUpFront = { 0.0,1.0,1.0 };
 
-	glm::vec2 frontTexCoords;
-	glm::vec2 rightTexCoords;
-	glm::vec2 backTexCoords;
-	glm::vec2 leftTexCoords;
-	glm::vec2 topTexCoords;
-	glm::vec2 bottomTexCoords;
+	Vec2 frontTexCoords;
+	Vec2 rightTexCoords;
+	Vec2 backTexCoords;
+	Vec2 leftTexCoords;
+	Vec2 topTexCoords;
+	Vec2 bottomTexCoords;
 	switch (type) {
 	case (int_fast8_t)BlockType::Dirt:
 		frontTexCoords = { Texture::AtlasBlockX(2),Texture::AtlasBlockY(0) };
@@ -210,12 +206,12 @@ std::vector<Vertex> Chunk::GenerateBlockVertices(const glm::vec3& position, int_
 	default:
 		ASSERT(false);
 	}
-	glm::vec2 rightDown = { Texture::m_Offset,0.0 };
-	glm::vec2 rightUp = { Texture::m_Offset,Texture::m_Offset };
-	glm::vec2 leftUp = { 0.0,Texture::m_Offset };
-	glm::vec2 leftDown = { 0.0,0.0 };
-	glm::vec3 frontBackColor = glm::vec3{0.80,0.80,0.80};
-	glm::vec3 leftRightColor = glm::vec3{0.60,0.60,0.60};
+	Vec2 rightDown = { Texture::m_Offset,0.0 };
+	Vec2 rightUp = { Texture::m_Offset,Texture::m_Offset };
+	Vec2 leftUp = { 0.0,Texture::m_Offset };
+	Vec2 leftDown = { 0.0,0.0 };
+	Vec3 frontBackColor = Vec3{0.80,0.80,0.80};
+	Vec3 leftRightColor = Vec3{0.60,0.60,0.60};
 	//FRONT
 	if(!neighbours[(int)BlockSides::FRONT]){
 		//m_Indices.insert(m_Indices.end(), { verticesOffset,verticesOffset + 1,verticesOffset + 2,verticesOffset,verticesOffset + 2,verticesOffset + 3 });

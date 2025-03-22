@@ -66,21 +66,21 @@ void Renderer::AddVertices(const std::vector<Vertex>& vertices, std::vector<Rend
 	}
 }
 
-void Renderer::LoadChunkTerrain(glm::vec3 chunkOrigin, const std::vector<Vertex>& vertices)
+void Renderer::LoadChunkTerrain(const ChunkPosition& chunkOrigin, const std::vector<Vertex>& vertices)
 {
 	if (m_LoadedChunksTerrain.find(chunkOrigin) == m_LoadedChunksTerrain.end()) {
 		AddVertices(vertices, m_LoadedChunksTerrain[chunkOrigin]);
 	}
 }
 
-void Renderer::LoadChunkWater(glm::vec3 chunkOrigin, const std::vector<Vertex>& vertices)
+void Renderer::LoadChunkWater(const ChunkPosition& chunkOrigin, const std::vector<Vertex>& vertices)
 {
 	if (m_LoadedChunksWater.find(chunkOrigin) == m_LoadedChunksWater.end()) {
 		AddVertices(vertices, m_LoadedChunksWater[chunkOrigin]);
 	}
 }
 
-void Renderer::UnloadChunkTerrain(glm::vec3 chunkOrigin)
+void Renderer::UnloadChunkTerrain(const ChunkPosition& chunkOrigin)
 {
 	if (m_LoadedChunksTerrain.find(chunkOrigin) != m_LoadedChunksTerrain.end()) {
 		for (RenderBatch* renderBatch : m_LoadedChunksTerrain[chunkOrigin]) {
@@ -89,7 +89,7 @@ void Renderer::UnloadChunkTerrain(glm::vec3 chunkOrigin)
 	}
 }
 
-void Renderer::UnloadChunkWater(glm::vec3 chunkOrigin)
+void Renderer::UnloadChunkWater(const ChunkPosition& chunkOrigin)
 {
 	if (m_LoadedChunksWater.find(chunkOrigin) != m_LoadedChunksWater.end()) {
 		for (RenderBatch* renderBatch : m_LoadedChunksWater[chunkOrigin]) {
@@ -98,12 +98,12 @@ void Renderer::UnloadChunkWater(glm::vec3 chunkOrigin)
 	}
 }
 
-bool Renderer::IsChunkLoaded(glm::vec3 chunkOrigin) const
+bool Renderer::IsChunkLoaded(const ChunkPosition& chunkOrigin) const
 {
 	return m_LoadedChunksTerrain.find(chunkOrigin) != m_LoadedChunksTerrain.end();
 }
 
-void Renderer::WaitForChunkVertices(glm::vec3 chunkOrigin)
+void Renderer::WaitForChunkVertices(const ChunkPosition& chunkOrigin)
 {
 	if (std::find(m_CheckForChunkVertices.begin(), m_CheckForChunkVertices.end(), chunkOrigin)==m_CheckForChunkVertices.end()) {
 		m_CheckForChunkVertices.push_back(chunkOrigin);
@@ -112,7 +112,7 @@ void Renderer::WaitForChunkVertices(glm::vec3 chunkOrigin)
 
 void Renderer::GetVerticesFromThreadLoop(ThreadPool& threadPool)
 {
-	for (const glm::vec3& chunkOrigin : m_CheckForChunkVertices) {
+	for (const ChunkPosition& chunkOrigin : m_CheckForChunkVertices) {
 		if (threadPool.HasChunkLoaded(chunkOrigin)) {
 			LoadChunkTerrain(chunkOrigin,threadPool.GetChunkTerrainVertices(chunkOrigin));
 			LoadChunkWater(chunkOrigin,threadPool.GetChunkWaterVertices(chunkOrigin));
