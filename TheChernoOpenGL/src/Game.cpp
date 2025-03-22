@@ -33,7 +33,6 @@ void Game::Update(float deltaTime)
 	{
 		ImGui::Begin("Debug info",(bool*)0,ImGuiWindowFlags_NoTitleBar);  
 		ImGui::Text("Framerate: %.1f", io->Framerate);
-		ImGui::Text("Continentalness: %.3f", Chunk::GetContinentalness(m_Camera->Position.x,m_Camera->Position.z));
 		ImGui::End();
 	}
 	m_World->UpdateChunksToRender(m_Camera->Position);

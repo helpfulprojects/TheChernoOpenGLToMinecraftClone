@@ -25,17 +25,24 @@ Chunk::Chunk(const ChunkPosition& position) : m_Position(position)
 		for (unsigned int z = 0; z < Chunk::DEPTH; z++) {
 			for (unsigned int x = 0; x < Chunk::WIDTH; x++) {
 				unsigned int index = PositionToIndex(x, y, z);
-				m_Blocks[index] = GetBlock(position.x + x, position.y + y, position.z + z);
+				if (y <= 50) {
+					m_Blocks[index] = (int_fast8_t)BlockType::Dirt;
+				}
+				else if (y<=150) {
+					m_Blocks[index] = GetBlock(position.x+x, position.y+y, position.z+z);
+				}
+				else {
+					m_Blocks[index] = (int_fast8_t)BlockType::Air;
+				}
 			}
 		}
 	}
 	auto endChunk = std::chrono::high_resolution_clock::now();
-	//std::cout << "CREATE CHUNK: " << std::chrono::duration_cast<std::chrono::milliseconds>(endChunk - start).count() << " miliseconds" << std::endl;
+	std::cout << "CREATE CHUNK: " << std::chrono::duration_cast<std::chrono::milliseconds>(endChunk - start).count() << " miliseconds" << std::endl;
 };
 
 double Chunk::GetContinentalness(float x, float z)
 {
-	//return perlin.normalizedOctave2D(x*m_Continentalness, z*m_Continentalness,4);
 	return perlin.octave2D_11(x*m_Continentalness, z*m_Continentalness,4);
 }
 
@@ -81,7 +88,7 @@ int_fast8_t Chunk::GetBlock(int x, int y, int z) const
 
 	int waterY = 85;
 	if (y <= surfaceY) {
-		if(y==surfaceY) return (int_fast8_t)BlockType::Grass;
+		if(y==surfaceY && y>=waterY-1) return (int_fast8_t)BlockType::Grass;
 		return (int_fast8_t)BlockType::Dirt;
 	}
 	else {
@@ -147,7 +154,7 @@ void Chunk::GetChunkBlocksVertecies(std::vector<Vertex>& terrainVertices, std::v
 		}
 	}
 	auto endChunk = std::chrono::high_resolution_clock::now();
-	//std::cout << "GENERATE CHUNK: " << std::chrono::duration_cast<std::chrono::milliseconds>(endChunk - start).count() << " miliseconds" << std::endl;
+	std::cout << "GENERATE CHUNK: " << std::chrono::duration_cast<std::chrono::milliseconds>(endChunk - start).count() << " miliseconds" << std::endl;
 }
 
 
@@ -214,7 +221,6 @@ std::vector<Vertex> Chunk::GenerateBlockVertices(const Vec3& position, int_fast8
 	Vec3 leftRightColor = Vec3{0.60,0.60,0.60};
 	//FRONT
 	if(!neighbours[(int)BlockSides::FRONT]){
-		//m_Indices.insert(m_Indices.end(), { verticesOffset,verticesOffset + 1,verticesOffset + 2,verticesOffset,verticesOffset + 2,verticesOffset + 3 });
 		vertices.push_back({ position + rightDownFront,frontTexCoords + rightDown,frontBackColor });
 		vertices.push_back({ position + leftDownFront,	frontTexCoords + leftDown,frontBackColor });
 		vertices.push_back({ position + leftUpFront,	frontTexCoords + leftUp,frontBackColor });
