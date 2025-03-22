@@ -116,6 +116,7 @@ int main(void)
 
 	glfwSetKeyCallback(window, key_callback);
 	game = new Game(SCR_WIDTH,SCR_HEIGHT);
+	game->io = &io;
 	GlCall(glEnable(GL_BLEND));
 	GlCall(glEnable(GL_DEPTH_TEST));
 	GlCall(glEnable(GL_CULL_FACE));
@@ -139,6 +140,7 @@ int main(void)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
 		currentTime = (float)glfwGetTime();
 		deltaTime = currentTime - previousTime;
 		/* Render here */

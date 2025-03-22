@@ -8,10 +8,12 @@
 #include "Camera.h"
 #include "World.h"
 #include "ThreadPool.h"
+#include <imgui/imgui.h>
 class Game
 {
 public:
 	Renderer* m_Renderer;
+	ImGuiIO* io;
 	bool m_Keys[1024];
 	Game(unsigned int SCR_WIDTH, unsigned int SCR_HEIGHT) : m_SCR_WIDTH(SCR_WIDTH), m_SCR_HEIGHT(SCR_HEIGHT){}
 	~Game();
