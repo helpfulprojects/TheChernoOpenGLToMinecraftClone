@@ -7,7 +7,8 @@
 
 Game::~Game()
 {
-	delete shader;
+	delete m_TerrainShader;
+	delete m_WaterShader;
 	delete m_Renderer;
 	delete m_World;
 	delete texture;
@@ -20,12 +21,13 @@ void Game::Init()
 	m_Renderer = new Renderer();
 	m_World = new World();
 	m_ThreadPool = new ThreadPool(6);
-	shader = new Shader("res/shaders/Basic.shader");
-	shader->Bind();
+	m_TerrainShader = new Shader("res/shaders/Basic.shader");
+	m_WaterShader = new Shader("res/shaders/Water.shader");
+	m_TerrainShader->Bind();
 	texture = new Texture("res/textures/atlas.png");
 	texture->Bind();
-	shader->Uniform1i("u_Texture", 0);
-	shader->Unbind();
+	m_TerrainShader->Uniform1i("u_Texture", 0);
+	m_TerrainShader->Unbind();
 }
 void Game::Update(float deltaTime)
 {
@@ -39,13 +41,19 @@ void Game::Update(float deltaTime)
 }
 void Game::Render()
 {
-	shader->Bind();
+	m_TerrainShader->Bind();
 	glm::mat4 proj = glm::perspective(glm::radians(m_Camera->Zoom), (float)m_SCR_WIDTH / (float)m_SCR_HEIGHT, 0.1f, 1500.0f);
 	glm::mat4 view = m_Camera->GetViewMatrix();
 	glm::mat4 model = glm::mat4(1.0f); 
 	glm::mat4 mvp = proj * view * model;
-	shader->UniformMatrix4fv("u_MVP", mvp);
-	m_Renderer->Draw();
+	m_TerrainShader->UniformMatrix4fv("u_MVP", mvp);
+	m_Renderer->DrawTerrain();
+	m_WaterShader->Bind();
+	model = glm::mat4(1.0f); 
+	model = glm::translate(model, glm::vec3{0.0,-0.10,0.0});
+	mvp = proj * view * model;
+	m_WaterShader->UniformMatrix4fv("u_MVP", mvp);
+	m_Renderer->DrawWater();
 }
 void Game::ProcessInput(float deltaTime)
 {

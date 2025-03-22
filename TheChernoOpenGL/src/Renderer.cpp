@@ -30,13 +30,17 @@ void Renderer::Draw(const VertexArray& va) const
 	GlCall(glDrawArrays(GL_TRIANGLES, 0, va.GetVerticesCount()));
 }
 
-void Renderer::Draw() const
+void Renderer::DrawTerrain() const
 {
 	for (auto renderBatches : m_LoadedChunksTerrain) {
 		for (RenderBatch* renderBatch : renderBatches.second) {
 			renderBatch->Draw();
 		}
 	}
+}
+
+void Renderer::DrawWater() const
+{
 	for (auto renderBatches : m_LoadedChunksWater) {
 		for (RenderBatch* renderBatch : renderBatches.second) {
 			renderBatch->Draw();

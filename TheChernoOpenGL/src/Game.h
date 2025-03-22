@@ -22,7 +22,8 @@ public:
 	void ProcessMouse(float xpos, float ypos, float xoffset, float yoffset);
 private:
 	unsigned int vao;
-	Shader* shader;
+	Shader* m_TerrainShader;
+	Shader* m_WaterShader;
 	World* m_World;
 	ThreadPool* m_ThreadPool;
 	Texture* texture;

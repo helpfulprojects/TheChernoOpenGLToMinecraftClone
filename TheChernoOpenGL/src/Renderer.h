@@ -15,7 +15,8 @@ public:
 	void Clear() const;
 	void Draw(const VertexArray& va, const IndexBuffer& ib) const;
 	void Draw(const VertexArray& va) const;
-	void Draw() const;
+	void DrawTerrain() const;
+	void DrawWater() const;
 	void AddVertex(const Vertex& vertex,std::vector<RenderBatch*>& renderBatch);
 	void AddVertices(const std::vector<Vertex>& vertices, std::vector<RenderBatch*>& renderBatch);
 	void LoadChunkTerrain(glm::vec3 chunkOrigin, const std::vector<Vertex>& vertices);
