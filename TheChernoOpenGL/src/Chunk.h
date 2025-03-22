@@ -13,7 +13,7 @@ public:
 	std::vector<Vertex> GetChunkBlocksVertecies(const Chunk* rightChunk, const Chunk* leftChunk, const Chunk* frontChunk, const Chunk* backChunk) const;
 	inline glm::vec3 GetPosition() const { return m_Position; }
 	void Draw(const Renderer& renderer);
-	const static int HEIGHT = 40;
+	const static int HEIGHT = 256;
 	const static int WIDTH = 16;
 	const static int DEPTH = 16;
 	const static siv::PerlinNoise::seed_type SEED = 123456u;

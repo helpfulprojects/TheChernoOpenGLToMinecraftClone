@@ -32,12 +32,13 @@ Chunk::Chunk(glm::vec3 position): m_Position(position)
 
 int_fast8_t Chunk::GetBlock(int x, int y, int z) const
 {
-	if(y>40)
+	int surfaceY = 100;
+	if(y>surfaceY+20)
 		return (int_fast8_t)BlockType::Air;
 	const double noise = perlin.normalizedOctave2D((float)x*.027f, (float)z*.027f,4)*20.0f;
-	int surfaceY = 20+noise;
-	int waterY = 18;
-	if (y < surfaceY) {
+	int surfaceNoiseY = surfaceY+noise;
+	int waterY = surfaceY-2;
+	if (y < surfaceNoiseY) {
 		return (int_fast8_t)BlockType::Grass;
 	}
 	else {
