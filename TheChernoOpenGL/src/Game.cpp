@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
+#include <imgui/imgui.h>
 
 Game::~Game()
 {
@@ -32,6 +33,7 @@ void Game::Init()
 void Game::Update(float deltaTime)
 {
 	std::cout <<"FPS:" << 1 / deltaTime << std::endl;
+	ImGui::ShowDemoWindow();
 	m_World->UpdateChunksToRender(m_Camera->Position);
 	m_World->LoadChunksInRenderer(*m_Renderer, *m_ThreadPool);
 	m_World->GetGeneratedChunksFromThreadLoop(*m_ThreadPool);

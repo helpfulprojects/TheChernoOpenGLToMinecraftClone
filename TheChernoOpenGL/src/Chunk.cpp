@@ -50,11 +50,12 @@ int_fast8_t Chunk::GetBlock(int x, int y, int z) const
 	int surfaceY = 100;
 	if(y>surfaceY+20)
 		return (int_fast8_t)BlockType::Air;
-	const double noise = perlin.normalizedOctave2D((float)x*.027f, (float)z*.027f,4)*20.0f;
+	const double noise = perlin.normalizedOctave2D((float)x*.011f, (float)z*.011f,4)*20.0f;
 	int surfaceNoiseY = surfaceY+noise;
-	int waterY = surfaceY-2;
-	if (y < surfaceNoiseY) {
-		return (int_fast8_t)BlockType::Grass;
+	int waterY = surfaceY;
+	if (y <= surfaceNoiseY) {
+		if(y==surfaceNoiseY) return (int_fast8_t)BlockType::Grass;
+		return (int_fast8_t)BlockType::Dirt;
 	}
 	else {
 		if (y < waterY) {
