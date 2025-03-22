@@ -26,7 +26,8 @@ public:
     bool IsChunkBeingGenerated(const glm::vec3& chunkOrigin);
     bool HasChunkGenerated(const glm::vec3& chunkOrigin);
     bool HasChunkLoaded(const glm::vec3& chunkOrigin);
-    std::vector<Vertex> GetChunkVertices(const glm::vec3& chunkOrigin);
+    std::vector<Vertex> GetChunkTerrainVertices(const glm::vec3& chunkOrigin);
+    std::vector<Vertex> GetChunkWaterVertices(const glm::vec3& chunkOrigin);
     Chunk* GetGeneratedChunk(const glm::vec3& chunkOrigin);
 private:
     // Vector to store worker threads
@@ -41,8 +42,11 @@ private:
     // Flag to indicate whether the thread pool should stop
     // or not
     bool stop_ = false;
-	std::unordered_map<glm::vec3, std::vector<Vertex>> chunksVerticesForRenderer;
-	std::mutex chunksVerticesMtx;
+	std::unordered_map<glm::vec3, std::vector<Vertex>> terrainVerticesForRenderer;
+	std::mutex terrainVerticesMtx;
+
+	std::unordered_map<glm::vec3, std::vector<Vertex>> waterVerticesForRenderer;
+	std::mutex waterVerticesMtx;
 
 	std::unordered_map<glm::vec3, Chunk*> generatedChunks;
 	std::mutex generatedChunksMtx;

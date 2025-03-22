@@ -34,7 +34,8 @@ void Game::Update(float deltaTime)
 	m_World->LoadChunksInRenderer(*m_Renderer, *m_ThreadPool);
 	m_World->GetGeneratedChunksFromThreadLoop(*m_ThreadPool);
 	m_Renderer->GetVerticesFromThreadLoop(*m_ThreadPool);
-	m_Renderer->UnloadChunks(*m_World);
+	m_Renderer->UnloadChunksTerrain(*m_World);
+	m_Renderer->UnloadChunksWater(*m_World);
 }
 void Game::Render()
 {

@@ -62,15 +62,21 @@ void ThreadPool::enqueue(std::function<void()> task)
 void ThreadPool::EnqueueChunkLoading(const Chunk* currentChunk, const Chunk* leftChunk, const Chunk* rightChunk, const Chunk* frontChunk, const Chunk* backChunk)
 {
     {
-        std::lock_guard<std::mutex> lock(chunksVerticesMtx);
-        chunksVerticesForRenderer[currentChunk->GetPosition()] = std::vector<Vertex>(); 
+        std::lock_guard<std::mutex> lock(terrainVerticesMtx);
+        terrainVerticesForRenderer[currentChunk->GetPosition()] = std::vector<Vertex>(); 
     }
 	enqueue([this, currentChunk, leftChunk, rightChunk, frontChunk, backChunk]() {
-			std::vector<Vertex> vertices = currentChunk->GetChunkBlocksVertecies(leftChunk, rightChunk, frontChunk, backChunk);
-			
+		std::vector<Vertex> terrainVertices;
+		std::vector<Vertex> waterVertices;
+		currentChunk->GetChunkBlocksVertecies(terrainVertices,waterVertices,leftChunk, rightChunk, frontChunk, backChunk);
 			{
-				std::lock_guard<std::mutex> lock(chunksVerticesMtx);
-				chunksVerticesForRenderer[currentChunk->GetPosition()] = vertices; 
+				std::lock_guard<std::mutex> lock(terrainVerticesMtx);
+				terrainVerticesForRenderer[currentChunk->GetPosition()] = terrainVertices; 
+			}
+
+			{
+				std::lock_guard<std::mutex> lock(waterVerticesMtx);
+				waterVerticesForRenderer[currentChunk->GetPosition()] = waterVertices; 
 			}
 		});
 }
@@ -93,7 +99,7 @@ void ThreadPool::EnqueueChunkGeneration(glm::vec3 chunkOrigin)
 
 bool ThreadPool::IsChunkBeingLoaded(const glm::vec3& chunkOrigin)
 {
-    return chunksVerticesForRenderer.find(chunkOrigin) != chunksVerticesForRenderer.end();
+    return terrainVerticesForRenderer.find(chunkOrigin) != terrainVerticesForRenderer.end();
 }
 
 bool ThreadPool::IsChunkBeingGenerated(const glm::vec3& chunkOrigin)
@@ -108,14 +114,22 @@ bool ThreadPool::HasChunkGenerated(const glm::vec3& chunkOrigin)
 
 bool ThreadPool::HasChunkLoaded(const glm::vec3& chunkOrigin)
 {
-	return IsChunkBeingLoaded(chunkOrigin) && chunksVerticesForRenderer[chunkOrigin].size() > 0;
+	return IsChunkBeingLoaded(chunkOrigin) && terrainVerticesForRenderer[chunkOrigin].size() > 0;
 }
 
-std::vector<Vertex> ThreadPool::GetChunkVertices(const glm::vec3& chunkOrigin)
+std::vector<Vertex> ThreadPool::GetChunkTerrainVertices(const glm::vec3& chunkOrigin)
 {
-	std::lock_guard<std::mutex> lock(chunksVerticesMtx);
-	std::vector<Vertex> vertices = chunksVerticesForRenderer[chunkOrigin];
-	chunksVerticesForRenderer.erase(chunksVerticesForRenderer.find(chunkOrigin));
+	std::lock_guard<std::mutex> lock(terrainVerticesMtx);
+	std::vector<Vertex> vertices = terrainVerticesForRenderer[chunkOrigin];
+	terrainVerticesForRenderer.erase(terrainVerticesForRenderer.find(chunkOrigin));
+	return vertices;
+}
+
+std::vector<Vertex> ThreadPool::GetChunkWaterVertices(const glm::vec3& chunkOrigin)
+{
+	std::lock_guard<std::mutex> lock(waterVerticesMtx);
+	std::vector<Vertex> vertices = waterVerticesForRenderer[chunkOrigin];
+	waterVerticesForRenderer.erase(waterVerticesForRenderer.find(chunkOrigin));
 	return vertices;
 }
 

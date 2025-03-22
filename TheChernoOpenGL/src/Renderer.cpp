@@ -2,9 +2,13 @@
 
 Renderer::~Renderer()
 {
-	for (auto chunkItr = m_LoadedChunks.begin();chunkItr != m_LoadedChunks.end();) {
-		UnloadChunk(chunkItr->first);
-		chunkItr = m_LoadedChunks.erase(m_LoadedChunks.find(chunkItr->first));
+	for (auto chunkItr = m_LoadedChunksTerrain.begin();chunkItr != m_LoadedChunksTerrain.end();) {
+		UnloadChunkTerrain(chunkItr->first);
+		chunkItr = m_LoadedChunksTerrain.erase(m_LoadedChunksTerrain.find(chunkItr->first));
+	}
+	for (auto chunkItr = m_LoadedChunksWater.begin();chunkItr != m_LoadedChunksWater.end();) {
+		UnloadChunkWater(chunkItr->first);
+		chunkItr = m_LoadedChunksWater.erase(m_LoadedChunksWater.find(chunkItr->first));
 	}
 }
 
@@ -28,7 +32,12 @@ void Renderer::Draw(const VertexArray& va) const
 
 void Renderer::Draw() const
 {
-	for (auto renderBatches : m_LoadedChunks) {
+	for (auto renderBatches : m_LoadedChunksTerrain) {
+		for (RenderBatch* renderBatch : renderBatches.second) {
+			renderBatch->Draw();
+		}
+	}
+	for (auto renderBatches : m_LoadedChunksWater) {
 		for (RenderBatch* renderBatch : renderBatches.second) {
 			renderBatch->Draw();
 		}
@@ -53,17 +62,33 @@ void Renderer::AddVertices(const std::vector<Vertex>& vertices, std::vector<Rend
 	}
 }
 
-void Renderer::LoadChunk(glm::vec3 chunkOrigin, const std::vector<Vertex>& vertices)
+void Renderer::LoadChunkTerrain(glm::vec3 chunkOrigin, const std::vector<Vertex>& vertices)
 {
-	if (m_LoadedChunks.find(chunkOrigin) == m_LoadedChunks.end()) {
-		AddVertices(vertices, m_LoadedChunks[chunkOrigin]);
+	if (m_LoadedChunksTerrain.find(chunkOrigin) == m_LoadedChunksTerrain.end()) {
+		AddVertices(vertices, m_LoadedChunksTerrain[chunkOrigin]);
 	}
 }
 
-void Renderer::UnloadChunk(glm::vec3 chunkOrigin)
+void Renderer::LoadChunkWater(glm::vec3 chunkOrigin, const std::vector<Vertex>& vertices)
 {
-	if (m_LoadedChunks.find(chunkOrigin) != m_LoadedChunks.end()) {
-		for (RenderBatch* renderBatch : m_LoadedChunks[chunkOrigin]) {
+	if (m_LoadedChunksWater.find(chunkOrigin) == m_LoadedChunksWater.end()) {
+		AddVertices(vertices, m_LoadedChunksWater[chunkOrigin]);
+	}
+}
+
+void Renderer::UnloadChunkTerrain(glm::vec3 chunkOrigin)
+{
+	if (m_LoadedChunksTerrain.find(chunkOrigin) != m_LoadedChunksTerrain.end()) {
+		for (RenderBatch* renderBatch : m_LoadedChunksTerrain[chunkOrigin]) {
+			delete renderBatch;
+		}
+	}
+}
+
+void Renderer::UnloadChunkWater(glm::vec3 chunkOrigin)
+{
+	if (m_LoadedChunksWater.find(chunkOrigin) != m_LoadedChunksWater.end()) {
+		for (RenderBatch* renderBatch : m_LoadedChunksWater[chunkOrigin]) {
 			delete renderBatch;
 		}
 	}
@@ -71,7 +96,7 @@ void Renderer::UnloadChunk(glm::vec3 chunkOrigin)
 
 bool Renderer::IsChunkLoaded(glm::vec3 chunkOrigin) const
 {
-	return m_LoadedChunks.find(chunkOrigin) != m_LoadedChunks.end();
+	return m_LoadedChunksTerrain.find(chunkOrigin) != m_LoadedChunksTerrain.end();
 }
 
 void Renderer::WaitForChunkVertices(glm::vec3 chunkOrigin)
@@ -85,17 +110,31 @@ void Renderer::GetVerticesFromThreadLoop(ThreadPool& threadPool)
 {
 	for (const glm::vec3& chunkOrigin : m_CheckForChunkVertices) {
 		if (threadPool.HasChunkLoaded(chunkOrigin)) {
-			LoadChunk(chunkOrigin,threadPool.GetChunkVertices(chunkOrigin));
+			LoadChunkTerrain(chunkOrigin,threadPool.GetChunkTerrainVertices(chunkOrigin));
+			LoadChunkWater(chunkOrigin,threadPool.GetChunkWaterVertices(chunkOrigin));
 		}
 	}
 }
 
-void Renderer::UnloadChunks(World& world)
+void Renderer::UnloadChunksTerrain(World& world)
 {
-	for (auto chunkItr = m_LoadedChunks.begin();chunkItr != m_LoadedChunks.end();) {
+	for (auto chunkItr = m_LoadedChunksTerrain.begin();chunkItr != m_LoadedChunksTerrain.end();) {
 		if (std::find(std::begin(world.m_ChunksToRender), std::end(world.m_ChunksToRender), chunkItr->first) == std::end(world.m_ChunksToRender)) {
-			UnloadChunk(chunkItr->first);
-			chunkItr = m_LoadedChunks.erase(m_LoadedChunks.find(chunkItr->first));
+			UnloadChunkTerrain(chunkItr->first);
+			chunkItr = m_LoadedChunksTerrain.erase(m_LoadedChunksTerrain.find(chunkItr->first));
+		}
+		else {
+			chunkItr++;
+		}
+	}
+}
+
+void Renderer::UnloadChunksWater(World& world)
+{
+	for (auto chunkItr = m_LoadedChunksWater.begin();chunkItr != m_LoadedChunksWater.end();) {
+		if (std::find(std::begin(world.m_ChunksToRender), std::end(world.m_ChunksToRender), chunkItr->first) == std::end(world.m_ChunksToRender)) {
+			UnloadChunkWater(chunkItr->first);
+			chunkItr = m_LoadedChunksWater.erase(m_LoadedChunksWater.find(chunkItr->first));
 		}
 		else {
 			chunkItr++;

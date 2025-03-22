@@ -30,6 +30,21 @@ Chunk::Chunk(glm::vec3 position): m_Position(position)
 	//std::cout << "CREATE CHUNK: " << std::chrono::duration_cast<std::chrono::milliseconds>(endChunk - start).count() << " miliseconds" << std::endl;
 }
 
+bool Chunk::IsNeighbourDifferentAndSolid(int_fast8_t currentBlockType, int_fast8_t neighbourType)
+{
+	if (
+		currentBlockType != (int_fast8_t)BlockType::Water &&
+		neighbourType == (int_fast8_t)BlockType::Water
+		) return false;
+
+	return neighbourType != (int_fast8_t)BlockType::Air;
+	//return currentBlockType == neighbourType || (
+	//		neighbourType != (int_fast8_t) BlockType::Air &&
+	//		neighbourType != (int_fast8_t) BlockType::Water
+	//	)
+	//	;
+}
+
 int_fast8_t Chunk::GetBlock(int x, int y, int z) const
 {
 	int surfaceY = 100;
@@ -56,10 +71,9 @@ Chunk::~Chunk()
 	//std::cout << "Deleted Chunk: " << m_Position.x << "," << m_Position.y << "," << m_Position.z << std::endl;
 }
 
-std::vector<Vertex> Chunk::GetChunkBlocksVertecies(const Chunk* rightChunk, const Chunk* leftChunk, const Chunk* frontChunk, const Chunk* backChunk) const
+void Chunk::GetChunkBlocksVertecies(std::vector<Vertex>& terrainVertices, std::vector<Vertex>& waterVertices, const Chunk* rightChunk, const Chunk* leftChunk, const Chunk* frontChunk, const Chunk* backChunk) const
 {
 	auto start = std::chrono::high_resolution_clock::now();
-	std::vector<Vertex> vertices;
 	size_t verticesOffset = 0;
 	size_t indicesOffset = 0;
 	for (unsigned int y = 0; y < Chunk::HEIGHT; y++) {
@@ -70,21 +84,21 @@ std::vector<Vertex> Chunk::GetChunkBlocksVertecies(const Chunk* rightChunk, cons
 				bool neighbours[6] = { false };
 				int neighbourIndex = 0;
 				neighbourIndex = PositionToIndex(x, y, z+1);
-				neighbours[(int)BlockSides::FRONT] = z<Chunk::DEPTH-1 && m_Blocks[neighbourIndex] != (int_fast8_t)BlockType::Air;
-				neighbours[(int)BlockSides::FRONT] = neighbours[(int)BlockSides::FRONT] || (frontChunk && z==Chunk::DEPTH-1 && frontChunk->m_Blocks[PositionToIndex(x,y,0)]!=(int_fast8_t)BlockType::Air);
+				neighbours[(int)BlockSides::FRONT] = z<Chunk::DEPTH-1 && IsNeighbourDifferentAndSolid(m_Blocks[index],m_Blocks[neighbourIndex]);
+				neighbours[(int)BlockSides::FRONT] = neighbours[(int)BlockSides::FRONT] || (frontChunk && z==Chunk::DEPTH-1 && IsNeighbourDifferentAndSolid(m_Blocks[index],frontChunk->m_Blocks[PositionToIndex(x,y,0)]));
 				neighbourIndex = PositionToIndex(x+1, y, z);
-				neighbours[(int)BlockSides::RIGHT] = x<Chunk::WIDTH-1 &&  m_Blocks[neighbourIndex] != (int_fast8_t)BlockType::Air;
-				neighbours[(int)BlockSides::RIGHT] = neighbours[(int)BlockSides::RIGHT] || (rightChunk && x==Chunk::WIDTH-1 && rightChunk->m_Blocks[PositionToIndex(0,y,z)]!=(int_fast8_t)BlockType::Air);
+				neighbours[(int)BlockSides::RIGHT] = x<Chunk::WIDTH-1 && IsNeighbourDifferentAndSolid(m_Blocks[index],m_Blocks[neighbourIndex]);
+				neighbours[(int)BlockSides::RIGHT] = neighbours[(int)BlockSides::RIGHT] || (rightChunk && x==Chunk::WIDTH-1 && IsNeighbourDifferentAndSolid(m_Blocks[index],rightChunk->m_Blocks[PositionToIndex(0,y,z)]));
 				neighbourIndex = PositionToIndex(x, y, z-1);
-				neighbours[(int)BlockSides::BACK] = z>0 &&  m_Blocks[neighbourIndex] != (int_fast8_t)BlockType::Air;
-				neighbours[(int)BlockSides::BACK] = neighbours[(int)BlockSides::BACK] || (backChunk && z==0 && backChunk->m_Blocks[PositionToIndex(x,y,Chunk::DEPTH-1)]!=(int_fast8_t)BlockType::Air);
+				neighbours[(int)BlockSides::BACK] = z>0 && IsNeighbourDifferentAndSolid(m_Blocks[index],m_Blocks[neighbourIndex]);
+				neighbours[(int)BlockSides::BACK] = neighbours[(int)BlockSides::BACK] || (backChunk && z==0 && IsNeighbourDifferentAndSolid(m_Blocks[index],backChunk->m_Blocks[PositionToIndex(x,y,Chunk::DEPTH-1)]));
 				neighbourIndex = PositionToIndex(x-1, y, z);
-				neighbours[(int)BlockSides::LEFT] = x>0 &&  m_Blocks[neighbourIndex] != (int_fast8_t)BlockType::Air;
-				neighbours[(int)BlockSides::LEFT] = neighbours[(int)BlockSides::LEFT] || (leftChunk && x==0 && leftChunk->m_Blocks[PositionToIndex(Chunk::WIDTH-1,y,z)]!=(int_fast8_t)BlockType::Air);
+				neighbours[(int)BlockSides::LEFT] = x>0 && IsNeighbourDifferentAndSolid(m_Blocks[index],m_Blocks[neighbourIndex]);
+				neighbours[(int)BlockSides::LEFT] = neighbours[(int)BlockSides::LEFT] || (leftChunk && x==0 && IsNeighbourDifferentAndSolid(m_Blocks[index],leftChunk->m_Blocks[PositionToIndex(Chunk::WIDTH-1,y,z)]));
 				neighbourIndex = PositionToIndex(x, y+1, z);
-				neighbours[(int)BlockSides::TOP] = y<Chunk::HEIGHT-1 &&  m_Blocks[neighbourIndex] != (int_fast8_t)BlockType::Air;
+				neighbours[(int)BlockSides::TOP] = y<Chunk::HEIGHT-1 && IsNeighbourDifferentAndSolid(m_Blocks[index],m_Blocks[neighbourIndex]);
 				neighbourIndex = PositionToIndex(x, y-1, z);
-				neighbours[(int)BlockSides::BOTTOM] = y>0 &&  m_Blocks[neighbourIndex] != (int_fast8_t)BlockType::Air;
+				neighbours[(int)BlockSides::BOTTOM] = y>0 && IsNeighbourDifferentAndSolid(m_Blocks[index],m_Blocks[neighbourIndex]);
 				glm::vec3 position = glm::vec3{x,y,z}+m_Position;
 
 				auto start = std::chrono::high_resolution_clock::now();
@@ -94,13 +108,17 @@ std::vector<Vertex> Chunk::GetChunkBlocksVertecies(const Chunk* rightChunk, cons
 				std::vector<Vertex> blockVertices = GenerateBlockVertices(position, m_Blocks[index], neighbours);
 				auto end = std::chrono::high_resolution_clock::now();
 				//std::cout << "GENERATE BLOCK: " << std::chrono::duration_cast<std::chrono::microseconds>(end- start).count() << " microseconds" << std::endl;
-				vertices.insert(vertices.begin(), blockVertices.begin(), blockVertices.end());
+				if (m_Blocks[index] == (int_fast8_t)BlockType::Water) {
+					waterVertices.insert(waterVertices.begin(), blockVertices.begin(), blockVertices.end());
+				}
+				else {
+					terrainVertices.insert(terrainVertices.begin(), blockVertices.begin(), blockVertices.end());
+				}
 			}
 		}
 	}
 	auto endChunk = std::chrono::high_resolution_clock::now();
 	//std::cout << "GENERATE CHUNK: " << std::chrono::duration_cast<std::chrono::milliseconds>(endChunk - start).count() << " miliseconds" << std::endl;
-	return vertices;
 }
 
 
