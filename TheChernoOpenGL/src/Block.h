@@ -1,11 +1,13 @@
 #pragma once
 #include <glm/glm.hpp>
 enum class BlockType {
-	Air = -1,
+	Air = 0,
 	Dirt,
 	Grass,
 	Stone,
-	Water
+	Water,
+	Trunk,
+	Leaves,
 };
 struct Vec3 {
 	float x;
